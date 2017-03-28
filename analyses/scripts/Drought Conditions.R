@@ -31,5 +31,8 @@ tx<- moisture %>%
   dplyr::select(-ID)%>%
   group_by(TX)%>%
   summarise_each(funs(mean))
+
+mod<-lm(percent~TX, data=soil)
+display(mod)
                  
 write.csv(tx, "output/Drought.csv", row.names= FALSE)

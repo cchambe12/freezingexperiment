@@ -35,26 +35,16 @@ phases.9<-c("9","15")
 df9<-filter(df, bbch %in% phases.9)
 df9$bbch<- factor(df9$bbch, levels = c(9,15), 
                         labels = c("Budburst","Leaves"))
-phases.10<-c("9","10","15")
-df10<-filter(df, bbch %in% phases.10)
-df10$bbch<- factor(df10$bbch, levels = c(9,10,15), 
-                  labels = c("NA","Budburst","Leaves"))
+code<-unite_(df9, "species_TX", c("species","TX"))
+df9<-full_join(df9, code)
 
 risk9<- df9%>%
-  group_by(NEW, bbch)%>%
+  group_by(NEW, bbch, species_TX)%>%
   arrange(NEW)%>%
   filter(row_number()==1) %>%
   spread(bbch, doy)
 risk9<-na.omit(risk9)
 risk9$Risk <- risk9$Leaves - risk9$Budburst
-
-risk10<- df10%>%
-  group_by(NEW, bbch)%>%
-  arrange(NEW)%>%
-  filter(row_number()==1) %>%
-  spread(bbch, doy)
-risk10<-na.omit(risk10)
-risk10$Risk <- risk10$Leaves - risk10$Budburst
 
 # Some graphs
 ggplot(risk9, aes(x=species, y=Risk)) + geom_point(aes(col=as.factor(TX))) + 
@@ -69,16 +59,21 @@ ggplot((risk9), aes(x=Budburst, y=NEW), stat="identity") + geom_point(aes(x= ris
 # Means and Standard deviations
 risk<-risk9%>%
   ungroup(NEW, Risk)%>%
-  dplyr::select(species, Risk)
+  dplyr::select(species_TX, Risk)
 risk.mean<- risk%>%
-  group_by(species) %>% 
+  group_by(species_TX) %>% 
   summarise_each(funs(mean))%>%
   rename(mean=Risk)
 risk.sd<-risk%>%
-  group_by(species) %>% 
+  group_by(species_TX) %>% 
   summarise_each(funs(sd)) %>%
   rename(sd=Risk)
+risk.count<-as.data.frame(table(risk$species_TX)) %>%
+  rename(species_TX=Var1)%>%
+  rename(count=Freq)
 risk.species<-full_join(risk.mean, risk.sd)
+risk.species.tx<-full_join(risk.species,risk.count)
+
 
 tx<-risk9%>%
   ungroup(NEW, Risk)%>%
@@ -93,5 +88,14 @@ tx.sd<-tx%>%
   rename(sd=Risk)
 tx.species<-full_join(tx.mean, tx.sd)
 
-mod<-lm(Risk~species + TX, data=risk9)
-display(mod)
+mod<-lm(Risk~TX, data=risk9)
+lmer<-lmer(Risk~TX + (1|species),data=risk9)
+display(mod);display(lmer)
+
+ggplot((risk9), aes(x=Budburst, y=Risk)) + xlab("Budburst") + ylab("Duration of Vegetative Risk") +
+  geom_point(aes(col=as.factor(TX))) + 
+  geom_smooth(aes(col=as.factor(TX)),method="lm", se=FALSE) 
+
+qplot(species, Risk, data = risk9, 
+      geom = "boxplot", color=TX) + 
+  xlab("Species")+ylab("Duration of Vegetative Risk")
