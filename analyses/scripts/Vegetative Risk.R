@@ -23,6 +23,7 @@ d <-read.csv("input/bbch_data.csv", header=TRUE, check.names=FALSE)
 # Organizing data
 df<-gather(d, "date","bbch", -NEW, -TX)
 df<-na.omit(df)
+df$date<-as.character(as.Date(df$date,"%m/%d/%y"))
 df$doy<-yday(df$date)
 df$species<-substr(df$NEW, 0,6)
 df<-dplyr::select(df, -date)
@@ -34,10 +35,10 @@ phases.9<-c("9","15")
 df9<-filter(df, bbch %in% phases.9)
 df9$bbch<- factor(df9$bbch, levels = c(9,15), 
                         labels = c("Budburst","Leaves"))
-phases.10<-c("10","15")
+phases.10<-c("9","10","15")
 df10<-filter(df, bbch %in% phases.10)
-df10$bbch<- factor(df10$bbch, levels = c(10,15), 
-                  labels = c("Budburst","Leaves"))
+df10$bbch<- factor(df10$bbch, levels = c(9,10,15), 
+                  labels = c("NA","Budburst","Leaves"))
 
 risk9<- df9%>%
   group_by(NEW, bbch)%>%
