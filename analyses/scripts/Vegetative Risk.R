@@ -14,6 +14,7 @@ library(ggplot2)
 library(lubridate)
 library(lme4)
 library(arm)
+library(car)
 
 
 # Set Working Directory
@@ -99,3 +100,28 @@ ggplot((risk9), aes(x=Budburst, y=Risk)) + xlab("Budburst") + ylab("Duration of 
 qplot(species, Risk, data = risk9, 
       geom = "boxplot", color=TX) + 
   xlab("Species")+ylab("Duration of Vegetative Risk")
+
+# Anova
+model<-lm(Risk~TX+Budburst+species,data=risk9)
+Anova(model)
+# ALNINC
+alninc<-risk9 %>% filter(species=="ALNINC")
+aln.mod<-lm(Risk~TX,data=alninc)
+Anova(aln.mod)
+
+# BETPOP
+betpop<-risk9 %>% filter(species=="BETPOP")
+bet.mod<-lm(Risk~TX,data=betpop)
+Anova(bet.mod)
+
+# PRUPEN
+prupen<-risk9 %>% filter(species=="PRUPEN")
+pru.mod<-lm(Risk~TX,data=prupen)
+Anova(pru.mod)
+
+# VIBCAS
+vibcas<-risk9 %>% filter(species=="VIBCAS")
+vib.mod<-lm(Risk~TX,data=vibcas)
+Anova(vib.mod)
+
+write.csv(risk.species.tx, "output/exp.species.count.csv", row.names = FALSE)
