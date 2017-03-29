@@ -75,7 +75,9 @@ risk.count<-as.data.frame(table(risk$species_TX)) %>%
 risk.species<-full_join(risk.mean, risk.sd)
 risk.species.tx<-full_join(risk.species,risk.count)
 
-
+tx.count<-as.data.frame(table(risk9$TX))%>%
+  rename(TX=Var1)%>%
+  rename(count=Freq)
 tx<-risk9%>%
   ungroup(NEW, Risk)%>%
   dplyr::select(TX, Risk)
@@ -88,6 +90,9 @@ tx.sd<-tx%>%
   summarise_each(funs(sd)) %>%
   rename(sd=Risk)
 tx.species<-full_join(tx.mean, tx.sd)
+tx.species.count<-full_join(tx.species,tx.count)
+
+#write.csv(tx.species.count, "output/tx_count.csv", row.names = FALSE)
 
 mod<-lm(Risk~TX, data=risk9)
 lmer<-lmer(Risk~TX + (1|species),data=risk9)
@@ -124,4 +129,4 @@ vibcas<-risk9 %>% filter(species=="VIBCAS")
 vib.mod<-lm(Risk~TX,data=vibcas)
 Anova(vib.mod)
 
-write.csv(risk.species.tx, "output/exp.species.count.csv", row.names = FALSE)
+#write.csv(risk.species.tx, "output/exp.species.count.csv", row.names = FALSE)
