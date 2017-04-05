@@ -30,22 +30,20 @@
 ]{siderules}
 
 \begin{document}
-\title{CSEE Abstract}
-\author{Chamberlain, CJ}
-\date{\today}
-\maketitle 
 
 \renewcommand{\thetable}{\arabic{table}}
 \renewcommand{\thefigure}{\arabic{figure}}
 \renewcommand{\labelitemi}{$-$}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{flushright}
+Catherine Chamberlain
+\end{flushright}
 \begin{center}
-\LARGE\textbf{Abstract}
+\LARGE\textbf{CSEE Abstract}
 \end{center}
-\section*{What is the relationship between false spring events and the timing between budburst and leafout?}
+\section*{What is the relationship between false spring events and the duration of vegetative risk?}
 
-Trees and shrubs growing in temperate environments are at risk of being exposed to late spring freezes, or false springs, which can be detrimental to growth. This risk is anticipated to be heighened due to the effects of anthropogenic climate change. Spring frosts during the vegetative growth phenophases impose the greatest freezing threat to deciduous tree species. Spring phenology of temperate forest trees is a greater indicator for level of risk than life stage. Individuals at a certain phenophase (i.e. between budburst and full leafout) are more likely to incur damage from a freezing event than individuals past the leafout phenophase, independent of life stage. The rate of budburst and the length of time between budburst and leafout is a crucial indicator for predicting level of damage from a false spring event. We will refer to the timing of these collective phenophases (i.e. budburst to leafout) as the duration of vegetative risk. In our study, we are assessing the effects of false spring events on the duration of vegetative risk. We imposed a freezing event on two treatments across 7 temperate tree species. One treatment was put under drought conditions prior to budburst and then was put in a growth chamber for 24 hours at -3$\circ$C and the other treatment just received a freezing event in the same chamber for 24 hours. The control group received normal precipitation and was not put in the growth chamber. Our results indicate that freezing events that occur between budburst and leafout, cause the duration of vegetative risk to increase. This results in an increase in the level of risk of false spring damage and possibly exposes tree buds to more freezing events. 
-
+Trees and shrubs growing in temperate environments are at risk of being exposed to late spring freezes, or false springs, which can be detrimental to growth. This risk is anticipated to be heighened due to the effects of anthropogenic climate change. Individuals at certain phenophases (i.e. between budburst and full leafout) are more likely to incur damage from a freezing event than individuals past the leafout phenophase. The rate of budburst and the length of time between budburst and leafout is a crucial indicator for predicting level of damage from a false spring event. We will refer to the timing of these collective phenophases (i.e. budburst to leafout) as the duration of vegetative risk. In our study, we are assessing the effects of false spring events on the duration of vegetative risk. In a growth chamber experiment, we exposed 7 native deciduous tree species to a freezing event. One treatment was put under drought conditions prior to budburst and then was put in a growth chamber for 24 hours at -3$^{\circ}$C, the second treatment was not put under drought conditions but did receive a false spring event and each group was compared to a control group. Our results indicate that freezing events occuring between budburst and leafout cause the duration of vegetative risk to increase. This could potentially expose leaf buds to more freezing events in one year and subsequently increase the level of damage incurred. Further studies are needed to investigate the amount of damage a freezing event causes and if a second freeze is as damaging.  
 
 \end{document}

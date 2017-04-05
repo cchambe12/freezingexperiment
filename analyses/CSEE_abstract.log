@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  5 APR 2017 12:55
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  5 APR 2017 13:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -779,34 +779,26 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <5> on input line 82.
 \c__siunitx_mathtt_int=\count155
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 86.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 86.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 86.
  [1
 
 {/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 (./CSEE_abstract.aux) ) 
 Here is how much of TeX's memory you used:
- 14888 strings out of 493014
- 298723 string characters out of 6133351
+ 14850 strings out of 493014
+ 298354 string characters out of 6133351
  318416 words of memory out of 5000000
- 18266 multiletter control sequences out of 15000+600000
- 25416 words of font info for 62 fonts, out of 8000000 for 9000
+ 18246 multiletter control sequences out of 15000+600000
+ 17252 words of font info for 38 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 37i,6n,42p,10385b,378s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 37i,5n,42p,10385b,275s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2016/texmf-dist/fonts/type1/public/a
 msfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmr12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmr17.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmsy10.pfb>
-Output written on CSEE_abstract.pdf (1 page, 58639 bytes).
+onts/cm/cmsy7.pfb>
+Output written on CSEE_abstract.pdf (1 page, 39800 bytes).
 PDF statistics:
- 28 PDF objects out of 1000 (max. 8388607)
- 19 compressed objects within 1 object stream
+ 20 PDF objects out of 1000 (max. 8388607)
+ 13 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
