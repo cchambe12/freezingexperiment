@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage{Sweave}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{mdframed}
+\usepackage{natbib}
+\bibliographystyle{..//refs/styles/besjournals.bst}
+\usepackage[small]{caption}
+\setkeys{Gin}{width=0.8\textwidth}
+\setlength{\captionmargin}{30pt}
+\setlength{\abovecaptionskip}{0pt}
+\setlength{\belowcaptionskip}{10pt}
+\topmargin -1.5cm        
+\oddsidemargin -0.04cm   
+\evensidemargin -0.04cm
+\textwidth 16.59cm
+\textheight 21.94cm 
+%\pagestyle{empty} %comment if want page numbers
+\parskip 7.2pt
+\renewcommand{\baselinestretch}{1.5}
+\parindent 0pt
+
+\newmdenv[
+  topline=true,
+  bottomline=true,
+  skipabove=\topsep,
+  skipbelow=\topsep
+]{siderules}
+
+\begin{document}
+
+\renewcommand{\thetable}{\arabic{table}}
+\renewcommand{\thefigure}{\arabic{figure}}
+\renewcommand{\labelitemi}{$-$}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\textbf{Author:} Catherine Chamberlain \\
+\textbf{Title:} The effects of false spring events on foliate phenophases and the duration of vegetative risk
+\par
+
+{\large\textbf{Methods and Materials:}}\\
+Individuals grown initially for the common garden project were collected for a growth chamber experiment. The goal was to have at least 6 replicates for each species at each site across two treatment groups and a control group. However, given that the individuals were not grown for this experiment, there are a number of confounding variables: 1) different ages within a species, 2) grown in different greenhouses for different periods of times, and some where put in the raised beds for a year or more, 3) placement in greenhouses and exposure to aphids and other pests. 
+
+All individuals were up-potted from 18 October 2016 - 04 November 2016 into larger pots, which were all the same size. Individuals were either up-potted from smaller pots that were kept in the greenhouses or from the raised beds outside. All 149 individuals were stored outside in between two raised beds from the date they were up-potted until {\textbf{(NEED TO CHECK THIS DATE! I THINK) 29 JANUARY 2017?}}, when they were moved back into the greenhouses. Chilling hours need to be calculated. I can used the climate data from \href{http://labs.arboretum.harvard.edu/weather/} and hopefully use the ospree code for chilling hours as reference. All of the individuals were moved into Greenhouse 10 on the same day. The greenhouse temperatures ranged from 11-20$^{\circ}$C, with a mean temperture around 14$^{\circ}$C. The humidity ranged from 65-99\%, with a mean humidity around 86\%. 
+
+
+\end{document}
