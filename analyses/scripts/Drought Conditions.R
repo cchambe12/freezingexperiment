@@ -35,4 +35,4 @@ tx<- moisture %>%
 mod<-lm(percent~TX, data=soil)
 display(mod)
                  
-write.csv(tx, "output/Drought.csv", row.names= FALSE)
+#write.csv(tx, "output/Drought.csv", row.names= FALSE)
