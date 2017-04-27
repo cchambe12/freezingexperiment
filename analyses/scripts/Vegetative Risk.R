@@ -99,8 +99,8 @@ lmer<-lmer(Risk~TX + (1|species),data=risk9)
 display(mod);display(lmer)
 
 ggplot((risk9), aes(x=Budburst, y=Risk)) + xlab("Budburst") + ylab("Duration of Vegetative Risk") +
-  geom_point(aes(col=as.factor(TX))) + 
-  geom_smooth(aes(col=as.factor(TX)),method="lm", se=FALSE) 
+  geom_point(aes(col=TX)) + 
+  geom_smooth(aes(col=TX),method="lm", se=FALSE) 
 
 qplot(species, Risk, data = risk9, 
       geom = "boxplot", color=TX) + 
