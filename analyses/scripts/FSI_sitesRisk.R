@@ -147,3 +147,4 @@ sh.last<-sh.last[order(sh.last$doy,sh.last$year),]
 sh.last<-sh.last[!duplicated(sh.last$year, fromLast=TRUE),]
 sh.last$last<-sh.last$Date
 
+

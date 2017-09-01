@@ -1,0 +1,184 @@
+\documentclass{article}
+\usepackage{Sweave}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{mdframed}
+\usepackage{natbib}
+\bibliographystyle{..//papers/styles/besjournals.bst}
+\usepackage[small]{caption}
+\setkeys{Gin}{width=0.8\textwidth}
+\setlength{\captionmargin}{30pt}
+\setlength{\abovecaptionskip}{0pt}
+\setlength{\belowcaptionskip}{10pt}
+\topmargin -1.5cm        
+\oddsidemargin -0.015cm   
+\evensidemargin -0.015cm
+\textwidth 16cm
+\textheight 21cm 
+%\pagestyle{empty} %comment if want page numbers
+\parskip 7.2pt
+\renewcommand{\baselinestretch}{2}
+\parindent 20pt
+\usepackage{indentfirst} 
+
+\newmdenv[
+  topline=true,
+  bottomline=true,
+  skipabove=\topsep,
+  skipbelow=\topsep
+]{siderules}
+
+\begin{document}
+
+\renewcommand{\thetable}{\arabic{table}}
+\renewcommand{\thefigure}{\arabic{figure}}
+\renewcommand{\labelitemi}{$-$}
+
+\renewcommand{\thesection}{\arabic{section}.}
+\renewcommand\thesubsection{\arabic{section}.\arabic{subsection}} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Experiment Breakdown}
+
+\begin{center}
+\captionof{table}{Experiment Part 1 - I monitored the phenology for the each plant. I observed budburst (BBCH 09) until leafout (BBCH 15) for each plant and noted floral development. I then calculated the SLA for each individual and will measure leaf chlorophyll content to quantify leaf discoloration due to frost damage. These plants are all in the Common Garden. Next year (or the next two years) I will observe the phenology and measure the same traits to see if there is a carry-over effect from the FS event. } \label{tab:exp1} 
+\footnotesize
+\begin{tabular}{|c | c | c | c |}
+\hline
+\textbf{Species} & \textbf{Site} & \textbf{No. of Individs} & \textbf{No. Frosted} \\
+\hline
+ACEPEN & WM & 12 & 6 \\
+\hline
+PRUPEN & SH & 12 & 6 \\
+\hline
+VIBCAS & WM & 14 & 7 \\
+\hline
+VIBCAS & GR & 12 & 6 \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+\begin{center}
+\captionof{table}{Experiment Part 2 - I monitored the phenology for each individual bud. I observed budburst (BBCH 09) until leafout (BBCH 15) for each bud on every plant. I then calculated the SLA for each individual and measured leaf chlorophyll content to quantify leaf discoloration due to frost damage. These plants will be planted in the common garden this fall. Next year (or the next two years) I will observe the phenology and measure the same traits to see if there is a carry-over effect from the FS event. \textbf{TO NOTE:} The SAMRACs had spider mites and then mealy bugs. The leaves are severly discolored and I have not been able to monitor traits yet. All the pests are gone and the individuals are slowly recovering. } \label{tab:exp2} 
+\footnotesize
+\begin{tabular}{|c | c | c | c |}
+\hline
+\textbf{Species} & \textbf{Site} & \textbf{No. of Individs} & \textbf{No. Frosted} \\
+\hline
+SAMRAC & GR & 18 & 9 \\
+\hline
+BETPAP & GR & 14 & 7 \\
+\hline
+BETPOP & WM & 16 & 8 \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Rationale for Traits:} Most papers studying false spring mention green up, crown dieback and decreased canopy development, and xylem cavitation --- or in extreme cases, embolism. In order to measure xylem vulnerability (a measure of stem cavitation or embolism) involves killing the plant so I chose not to measure that... yet. I wanted to quantify canopy development and overall growth so I chose SLA to measure that. I will measure plant height and DBH (if applicable) at the start of the growing season next year and then again at the end of the growing season. Finally, I chose leaf chlorophyll content after thoroughly discussing methods with Jess, Anju and Uri from the Holbrook lab. Leaf chlorophyll content can evaluate the level of discoloration in the plant and is comparable to leaf nitrogen. It is another indication of plant health. I will also continue to measure flower and fruit development.
+
+\section*{Field Freezing}
+
+\textbf{PLANS:} I intend to do essentially the same experiment for the field. I want to measure the same traits and observe the phenology for all individuals. I also want to do multiple years of measurements and observations to understand long-term effects. No study has really investigated the long-term effects, if there even are any. I am particularly interested in forest recruitment. From what I have read, I feel that seedlings and saplings are the most at risk to false spring events. If the young trees are severly damaged and survivability declines with climate change, then our forests in the long-term are at risk. 
+
+\begin{center}
+\captionof{table}{Field Freezing (Grant) - number of saplings marked per species. } \label{tab:grant} 
+\footnotesize
+\begin{tabular}{|c | c |}
+\hline
+\textbf{Species} & \textbf{No. of Individs} \\
+\hline
+VIBLAN & 16 \\
+\hline
+ILEMUC & 16 \\
+\hline
+BETALL & 16 \\
+\hline
+FAGGRA & 16 \\
+\hline
+ALNINC & 16 \\
+\hline
+PRUPEN & 16 \\
+\hline
+ACERUB & 16 \\
+\hline
+ACESAC & 16 \\
+\hline
+ACEPEN & 16 \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{center}
+\captionof{table}{Field Freezing (Harvard Forest) - number of individuals marked per species per life stage (i.e. sapling or adult). } \label{tab:hf} 
+\footnotesize
+\begin{tabular}{|c | c | c |}
+\hline
+\textbf{Species} & \textbf{No. of Individs} & \textbf{Life Stage} \\
+\hline
+ACESAC & 4 & sapling \\
+\hline
+ACERUB & 1 & sapling  \\
+\hline
+BETLEN & 7 & adult  \\
+\hline
+BETLEN & 3 & sapling  \\
+\hline
+ACEPEN & 5 & adult  \\
+\hline
+ACEPEN & 3 & sapling  \\
+\hline
+ACESAC & 4 & adult  \\
+\hline
+FAGGRA & 4 & adult  \\
+\hline
+HAMVIR & 7 & adult  \\
+\hline
+HAMVIR & 4 & sapling  \\
+\hline
+VIBACE & 3 & all (small)  \\
+\hline
+PRUPEN & 6 & sapling  \\
+\hline
+FAGGRA & 2 & sapling  \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Other species at HF:} BETALL, CORCOR, ILEMUC, VIBLAN
+
+\section*{Evaluating Frost Risk across Sites:}
+
+From the work that Tim did on weather data:
+\begin{itemize}
+\item Harvard Forest has the most consistent weather data, which is from one station for all 25 years investigated.
+\item The Grant also has all 25 years but the stations are further away.
+\item The White Mountains only have weather data through 2007.
+\item Saint Hipp as more sporatic weather data, at this time we only have 9 years.
+\end{itemize}
+
+\textbf{To Note:} My MatLab trial has ended. I can calculate SI-x for SH eventually but I will need to talk to Ben first and we should discuss further before we decide if I should use my research money for it or not. 
+
+\begin{center}
+\captionof{table}{Frost Risk - Looking at each site, I calculated GDD using the weather data we have. I consistently targeted GDD values between 200-300 (which is based off of John O'Keefe's observation data and the Harvard Forest weather data). This range is not perfect, but offers a consistent, rough estimate for spring onset. I also used the NPN SI-x calculator to evaluate spring onset for HF, WM, and GR. Finally, I used the PhenoCam data for SH and HF. The last column (\textbf{FSI Overlap}) looks at all years that were deamed a false spring year and if there were 2 or more methods that determined that year to be a false spring event for that particular site then it was included as a false spring event. All values include number of false springs calculated over the total number of years we have weather data. I have a supplemental list of years if you want to see that later.  } \label{tab:frost} 
+\footnotesize
+\begin{tabular}{|c | c | c | c | c |}
+\hline
+\textbf{Site} & \textbf{FSI from GDD} & \textbf{FSI from SI-x} & \textbf{FSI from PhenoCam} & \textbf{FSI Overlap} \\
+\hline
+HF & 11/25 = 0.44 & 16/25 = 0.64 & 0/7 = 0.0 & \textbf{7/25 = 0.28}\\
+\hline
+WM & 15/18 = 0.83 & 11/18 = 0.61 & N/A & \textbf{10/18 = 0.56}\\
+\hline
+GR & 14/25 = 0.56 & 12/25 = 0.48 & NA/A & \textbf{6/25 = 0.24}\\
+\hline
+SH & 3/9 = 0.33 & N/A & 0/2 = 0.00 & N/A\\
+\hline
+\end{tabular}
+\end{center}
+
+
+\end{document}
