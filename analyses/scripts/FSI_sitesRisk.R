@@ -116,6 +116,8 @@ hf.last<-hf.last[order(hf.last$doy,hf.last$year),]
 hf.last<-hf.last[!duplicated(hf.last$year, fromLast=TRUE),]
 hf.last$last<-hf.last$Date
 
+#write.csv(hf.last, file="~/Documents/git/freezingexperiment/analyses/output/hf_fsi.csv", row.names = FALSE)
+
 ## White Mountains ##
 wm.last<-wm%>%filter(frz>0)
 wm.last<-wm.last[order(wm.last$doy,wm.last$year),]
