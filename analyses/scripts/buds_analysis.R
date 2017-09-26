@@ -14,6 +14,7 @@ library(ggplot2)
 library(lubridate)
 library(lme4)
 library(arm)
+library(gridExtra)
 
 
 # Set Working Directory
@@ -75,19 +76,113 @@ qplot(species, percent.bb, data = perc,
   xlab("Species")+ylab("Percent Budburst")
 
 
+# Quick check...
+dvr<-dx[!is.na(dx$bbch),]
+done<-c("DONE!", "DONE", "DONE!!", "missed","(missed)", "")
+dvr<-dvr[!dvr$bbch%in%done,]
+dead<-c("stem snapped", "x", "dead")
+dvr$bbch<-ifelse(dvr$bbch%in%dead, 0, dvr$bbch)
+dvr$bud<-as.numeric(dvr$bud)
+dvr$ID<-paste(dvr$NEW, dvr$bud, sep="_")
+dvr<-dvr%>%dplyr::select(ID, doy.adjusted, bbch)
+last<-aggregate(dvr$doy.adjusted, by = list(dvr$ID), max)
+last<-last%>%rename(ID=Group.1)%>%rename(doy.adjusted=x)
+last$leaf<-NA
+for(i in c(1:nrow(last))) {
+  for(j in c(1:nrow(dvr)))
+    if(last$ID[i]==dvr$ID[j] & last$doy.adjusted[i]==dvr$doy.adjusted[j])
+      last$leaf[i]<-dvr$bbch[j]
+}
+
+first<-aggregate(dvr$doy.adjusted, by = list(dvr$ID), min)
+first<-first%>%rename(ID=Group.1)%>%rename(doy.adjusted=x)
+first$bb<-NA
+for(i in c(1:nrow(first))) {
+  for(j in c(1:nrow(dvr)))
+    if(first$ID[i]==dvr$ID[j] & first$doy.adjusted[i]==dvr$doy.adjusted[j])
+      first$bb[i]<-dvr$bbch[j]
+}
+
+
 ############## Determine Duration of Vegetative Risk #################
 ##### Need to clean data a lot - remove early incorrectly entered data 
 ## and edit errors from when I was away
 ## then determine dead buds and if any reached budburst and then died
 ## If so to above, need to recalculate percent budburst
 
+first<-first%>%rename(budburst=doy.adjusted)%>%rename(bbch.first=bb)
+last<-last%>%rename(leafout=doy.adjusted)%>%rename(bbch.last=leaf)
+risk<-full_join(first, last)
+risk$species<-substr(risk$ID, 1,6)
+risk$individ<-substr(risk$ID, 1, 10)
+risk$bud<-substr(risk$ID, 12, 13)
 
 
 
+###### Now integrate FS ###########
+frz<-subset(dx,TX=="B")
+frz<-dplyr::select(frz, NEW, Freeze, bud)
+frz$day<-substr(frz$Freeze, 1, 2)
+frz$month<-substr(frz$Freeze, 4, 5)
+frz$year<-substr(frz$Freeze, 7,10)
+x<-paste(frz$year, frz$day, frz$month)
+frz$date<-as.Date(strptime(x, format="%Y %d %m"))
+frz$frz<-yday(frz$date)
+frz<-dplyr::select(frz, NEW, frz)
+frz<-na.omit(frz)
+frz<-frz[!duplicated(frz),]
+risk$frz<-NA
+for(i in c(1:nrow(risk))) {
+  for(j in c(1:nrow(frz)))
+    if(risk$individ[i]==frz$NEW[j])
+      risk$frz[i]<-frz$frz[j]
+}
+risk$tx<-ifelse(is.na(risk$frz), "A", "B")
 
+leaf<-c(14, 15)
+risk$dvr<-ifelse(risk$bbch.last%in%leaf, (risk$leafout-risk$budburst), NA)
+risk$frost<-ifelse(risk$bbch.first<=risk$frz, TRUE, FALSE)
+risk$frost<-ifelse(risk$tx=="A", FALSE, risk$frost)
 
+risk$bud<-as.numeric(risk$bud)
+mod1<-glm(dvr~bud+species+frost, data=risk)
+display(mod1)
+betula<-c("BETPOP", "BETPAP")
+birch<-subset(risk, risk$species%in%betula)
+mod2<-glm(dvr~bud+species+frost, data=birch)
+display(mod2)
+mod3<-glm(dvr~species+bud*tx, data=birch)
+display(mod3)
+bpap<-ggplot(birch, aes(x=bud, y=dvr, color=tx)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
 
+###### Re-evaluated % budburst #######
+burst<-risk[!is.na(risk$dvr),]
+burst<-distinct(burst, ID,individ)
+burst<-as.data.frame(table(burst$individ))
+burst<-burst%>%rename(individ=Var1)%>%rename(burst=Freq)
+burst$individ<-as.character(burst$individ)
 
+total<-risk
+total<-distinct(total, ID,individ)
+total<-as.data.frame(table(total$individ))
+total<-total%>%rename(individ=Var1)%>%rename(total=Freq)
+total$individ<-as.character(total$individ)
 
+percent<-full_join(total, burst)
+percent$perc.bb<-percent$burst/percent$total
+percent$species<-substr(percent$individ, 1,6)
+percent$tx<-NA
+percent$tx<-as.character(percent$tx)
+for(i in c(1:nrow(percent))){
+  for(j in c(1:nrow(risk)))
+    if(percent$individ[i]==risk$individ[j])
+      percent$tx[i]<-risk$tx[j]
+}
 
+percent$species<-substr(percent$individ, 1, 6)
+mod<-lm(perc.bb~tx + species, data=percent)
+display(mod)
 
+qplot(species, perc.bb, data = percent, 
+      geom = "boxplot", color=tx) + 
+  xlab("Species")+ylab("Percent Budburst")
