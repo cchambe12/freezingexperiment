@@ -19,7 +19,7 @@ library(gridExtra)
 
 # Set Working Directory
 setwd("~/Documents/git/freezingexperiment/analyses")
-d <-read.csv("input/Buds_Sheet.csv", header=TRUE, check.names=FALSE)
+d <-read.csv("input/Buds_clean.csv", header=TRUE, check.names=FALSE)
 
 ################ Cleaning data ##################################
 # remove individuals that were frosted twice
@@ -140,12 +140,12 @@ for(i in c(1:nrow(risk))) {
 risk$tx<-ifelse(is.na(risk$frz), "A", "B")
 
 leaf<-c(14, 15)
-risk$dvr<-ifelse(risk$bbch.last%in%leaf, (risk$leafout-risk$budburst), NA)
-risk$frost<-ifelse(risk$bbch.first<=risk$frz, TRUE, FALSE)
-risk$frost<-ifelse(risk$tx=="A", FALSE, risk$frost)
+risk$dvr<-ifelse(risk$bbch.last==15, (risk$leafout-risk$budburst), NA)
+risk$frost<-ifelse(risk$bbch.first<=risk$frz, 1, 0)
+risk$frost<-ifelse(risk$tx=="A", 0, risk$frost)
 
 risk$bud<-as.numeric(risk$bud)
-mod1<-glm(dvr~bud+species+frost, data=risk)
+mod1<-lm(dvr~bud+species+frost, data=birch)
 display(mod1)
 betula<-c("BETPOP", "BETPAP")
 birch<-subset(risk, risk$species%in%betula)
@@ -153,7 +153,18 @@ mod2<-glm(dvr~bud+species+frost, data=birch)
 display(mod2)
 mod3<-glm(dvr~species+bud*tx, data=birch)
 display(mod3)
+mod4<-lmer(dvr~bud+frost+(1|species), data=birch)
+display(mod4)
 bpap<-ggplot(birch, aes(x=bud, y=dvr, color=tx)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
+
+birch.mean<-birch[!is.na(birch$dvr),]
+birch.mean$avg.rate<-ave(birch.mean$dvr, birch.mean$individ)
+hist(birch.mean$avg.rate)
+M1<-lm(avg.rate~tx+species, data=birch.mean)
+display(M1)
+qplot(species, avg.rate, data = birch.mean, 
+      geom = "boxplot", color=tx) + 
+  xlab("Species")+ylab("Mean DVR")
 
 ###### Re-evaluated % budburst #######
 burst<-risk[!is.na(risk$dvr),]
@@ -180,9 +191,12 @@ for(i in c(1:nrow(percent))){
 }
 
 percent$species<-substr(percent$individ, 1, 6)
+percent<-subset(percent, species %in% betula)
 mod<-lm(perc.bb~tx + species, data=percent)
 display(mod)
 
 qplot(species, perc.bb, data = percent, 
       geom = "boxplot", color=tx) + 
   xlab("Species")+ylab("Percent Budburst")
+
+#write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_buddata.csv"), row.names=FALSE)
