@@ -108,9 +108,9 @@ for(i in c(1:nrow(risk))) {
     if(risk$individ[i]==frz$NEW[j])
       risk$frz[i]<-frz$frz[j]
 }
+risk$frz<- risk$frz-start
 risk$tx<-ifelse(is.na(risk$frz), "A", "B")
 
-leaf<-c(14, 15)
 risk$dvr<-ifelse(risk$bbch.last==15, (risk$leafout-risk$budburst), NA)
 risk$frost<-ifelse(risk$bbch.first<=risk$frz, 1, 0)
 risk$frost<-ifelse(risk$tx=="A", 0, risk$frost)
@@ -169,6 +169,10 @@ display(mod)
 qplot(species, perc.bb, data = percent, 
       geom = "boxplot", color=tx) + 
   xlab("Species")+ylab("Percent Budburst")
+
+birch$ind<-substr(birch$individ, 9, 10)
+new.mod<-lmer(dvr~frost+bud+(1|ind/species), data=birch)
+display(new.mod)
 
 #write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_buddata.csv"), row.names=FALSE)
 #write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_speciesdata.csv"), row.names=FALSE)
