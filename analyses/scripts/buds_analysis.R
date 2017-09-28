@@ -47,35 +47,6 @@ start<-yday("2017/03/24")
 dx$doy.adjusted<-dx$doy-start
 dx$bud <- ave(dx$Bud, dx$NEW, dx$date, FUN = seq_along)
 
-
-#### Determine Percent Budburst - relationship with treatment? ##################
-buds<-subset(dx, bbch==15)
-buds<-dplyr::select(buds, NEW, bud, doy.adjusted)
-buds$id<-paste(buds$NEW, buds$bud)
-buds<-aggregate(doy.adjusted ~ id, data = buds, min)
-buds$individ<-substr(buds$id, 1, 10)
-buds<-distinct(buds, id,individ)
-burst<-as.data.frame(table(buds$individ))
-burst<-burst%>%rename(id=Var1)%>%rename(burst=Freq)
-burst$id<-as.character(burst$id)
-
-all<-dplyr::select(dx, NEW, TX, bud)
-all$bud<-as.numeric(all$bud)
-all<-aggregate(all$bud, by = list(all$NEW, all$TX), max)
-all<-all%>%rename(id=Group.1)%>%rename(total=x) %>%rename(tx=Group.2)
-
-perc<-full_join(burst, all)
-perc$percent.bb<-perc$burst/perc$total
-perc$species<-substr(perc$id, 1,6)
-
-mod<-lm(percent.bb~tx + species, data=perc)
-display(mod)
-
-qplot(species, percent.bb, data = perc, 
-      geom = "boxplot", color=tx) + 
-  xlab("Species")+ylab("Percent Budburst")
-
-
 # Quick check...
 dvr<-dx[!is.na(dx$bbch),]
 done<-c("DONE!", "DONE", "DONE!!", "missed","(missed)", "")
@@ -200,3 +171,4 @@ qplot(species, perc.bb, data = percent,
   xlab("Species")+ylab("Percent Budburst")
 
 #write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_buddata.csv"), row.names=FALSE)
+#write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_speciesdata.csv"), row.names=FALSE)
