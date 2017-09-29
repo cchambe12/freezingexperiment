@@ -20,6 +20,8 @@ library(arm)
 setwd("~/Documents/git/freezingexperiment/analyses")
 d <-read.csv("input/buds_traits.csv", header=TRUE)
 bb<-read.csv("output/birches_buddata.csv", header=TRUE)
+area<-read.csv("input/SLA_buds.csv", header=TRUE)
+wt<-read.csv("input/SLA_weight.csv", header=TRUE)
 
 ## Start working on columns
 dx<-dplyr::select(d, NEW, TX, Bud, Chlorophyll)
@@ -66,3 +68,38 @@ hist(bb$chlorophyll[bb$frost==1])
 
 bb.chl<-bb[!is.na(bb$chlorophyll),]
 table(bb.chl$individ)
+
+area$ID<-paste(area$ID, area$number, sep=".")
+area$dry<-NA
+for(i in c(1:nrow(area))){
+  for(j in c(1:nrow(wt)))
+    if(area$ID[i]==wt$ID[j])
+      area$dry[i]<-wt$dry[j]
+}
+area$sla<-area$Area/area$dry
+area$ID<-substr(area$ID, 1, 10)
+area$sla <- ave(area$sla, area$ID)
+area<-dplyr::select(area, ID, sla)
+area<-area[!duplicated(area),]
+
+bb<-read.csv("output/buds_traits.csv", header=TRUE)
+bb$sla<-NA
+for(i in c(1:nrow(bb))){
+  for(j in c(1:nrow(area)))
+    if(bb$individ[i]==area$ID[j])
+      bb$sla[i]<-area$sla[j]
+}
+
+bb$dvr<-as.numeric(bb$dvr)
+bb$dvr<-ifelse(is.na(bb$dvr), 0, bb$dvr)
+bb$dvr.avg<-ave(bb$dvr, bb$individ)
+sla.mod<-lm(sla~tx+dvr.avg, data=bb)
+display(sla.mod)
+sla.mod2<-lm(sla~tx+dvr.avg+tx*dvr.avg, data=bb)
+display(sla.mod2)
+
+qplot(species, sla, data = bb, 
+      geom = "boxplot", color=tx) + 
+  xlab("Species")+ylab("SLA")
+
+  
