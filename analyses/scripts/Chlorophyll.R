@@ -39,11 +39,11 @@ display(chl.mod)
 
 qplot(species, chlorophyll, data = bb, 
       geom = "boxplot", color=tx) + 
-  xlab("Species")+ylab("Percent Budburst")
+  xlab("Species")+ylab("Chlorophyll")
 
 ggplot(bb, aes(x=bud, y=chlorophyll, color=as.factor(frost))) + geom_point() + geom_smooth(method="lm")
 
-dx$frz<-ifelse(d$TX=="A", 0, 1)
+dx$frz<-ifelse(dx$TX=="A", 0, 1)
 dx<-na.omit(dx)
 dx$spp<-substr(dx$NEW, 0,6)
 sp.mean<-aggregate(Chlorophyll~NEW + frz, dx, mean)
@@ -59,3 +59,10 @@ mod<-lmer(Chlorophyll~frz + (1|spp), data=dx)
 summary(mod)
 hist(dx$Chlorophyll[dx$frz==0])
 hist(dx$Chlorophyll[dx$frz==1])
+hist(bb$chlorophyll[bb$frost==0])
+hist(bb$chlorophyll[bb$frost==1])
+
+#write.csv(bb, file=("~/Documents/git/freezingexperiment/analyses/output/buds_traits.csv"), row.names=FALSE)
+
+bb.chl<-bb[!is.na(bb$chlorophyll),]
+table(bb.chl$individ)

@@ -176,3 +176,7 @@ display(new.mod)
 
 #write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_buddata.csv"), row.names=FALSE)
 #write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_speciesdata.csv"), row.names=FALSE)
+
+
+
+
