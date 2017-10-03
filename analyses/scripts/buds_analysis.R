@@ -116,7 +116,7 @@ risk$frost<-ifelse(risk$bbch.first<=risk$frz, 1, 0)
 risk$frost<-ifelse(risk$tx=="A", 0, risk$frost)
 
 risk$bud<-as.numeric(risk$bud)
-mod1<-lm(dvr~bud+species+frost, data=birch)
+mod1<-lmer(dvr~tx+(1|species), data=risk)
 display(mod1)
 betula<-c("BETPOP", "BETPAP")
 birch<-subset(risk, risk$species%in%betula)
@@ -124,16 +124,24 @@ mod2<-glm(dvr~bud+species+frost, data=birch)
 display(mod2)
 mod3<-glm(dvr~species+bud*tx, data=birch)
 display(mod3)
-mod4<-lmer(dvr~bud+frost+(1|species), data=birch)
+mod4<-lmer(dvr~tx + (1|species), data=birch)
 display(mod4)
 bpap<-ggplot(birch, aes(x=bud, y=dvr, color=tx)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
+
+birch$bud
+birch$z_bud<-(birch$bud - mean(birch$bud))/sd(birch$bud)
+lmod1<-lmer(dvr~tx+bud+(1|species), data=birch)
+display(lmod1)
+simp<-lm(dvr~frost+bud+species+frost:bud, data=birch)
+display(simp)
+
 
 birch.mean<-birch[!is.na(birch$dvr),]
 birch.mean$avg.rate<-ave(birch.mean$dvr, birch.mean$individ)
 hist(birch.mean$avg.rate)
-M1<-lm(avg.rate~tx+species, data=birch.mean)
+M1<-lmer(avg.rate~tx+(1|species), data=birch.mean)
 display(M1)
-qplot(species, avg.rate, data = birch.mean, 
+qplot(species, dvr, data = birch, 
       geom = "boxplot", color=tx) + 
   xlab("Species")+ylab("Mean DVR")
 
@@ -151,7 +159,7 @@ total<-total%>%rename(individ=Var1)%>%rename(total=Freq)
 total$individ<-as.character(total$individ)
 
 percent<-full_join(total, burst)
-percent$perc.bb<-percent$burst/percent$total
+percent$perc.bb<-(percent$burst/percent$total)*100
 percent$species<-substr(percent$individ, 1,6)
 percent$tx<-NA
 percent$tx<-as.character(percent$tx)
@@ -163,7 +171,7 @@ for(i in c(1:nrow(percent))){
 
 percent$species<-substr(percent$individ, 1, 6)
 percent<-subset(percent, species %in% betula)
-mod<-lm(perc.bb~tx + species, data=percent)
+mod<-lm(perc.bb~tx+species, data=percent)
 display(mod)
 
 qplot(species, perc.bb, data = percent, 
@@ -171,7 +179,7 @@ qplot(species, perc.bb, data = percent,
   xlab("Species")+ylab("Percent Budburst")
 
 birch$ind<-substr(birch$individ, 9, 10)
-new.mod<-lmer(dvr~frost+bud+(1|ind/species), data=birch)
+new.mod<-lmer(dvr~frost+bud+(1|species), data=birch)
 display(new.mod)
 
 #write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_buddata.csv"), row.names=FALSE)
