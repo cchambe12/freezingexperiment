@@ -9,12 +9,16 @@ graphics.off()
 # Load libraries
 library(lme4)
 
-nind = 15 # number of individuals
+nind = 14 # number of individuals
 
-ntot = 25 # numbers of obs per individuals 
+nbud = 22 # numbers of obs per individuals 
+
+nsp = 2 # number of species
+
+ntot = nind*nbud*nsp
 
 #  with individuals
-baseinter <- 12 # baseline intercept (DVR) across all individuals
+baseinter <- 11 # baseline intercept (DVR) across all individuals
 ind_int <- baseinter + c(1:nind)-mean(1:nind) # different intercepts by individuals
 
 # now start building ...
@@ -54,9 +58,9 @@ for(i in 1:nind){ # loop over species. i = 1
              rnorm(1, budcoef, budcoef.sd)
   )
   
-  bb <- rnorm(n = ntot, mean = mm %*% coeff, sd = 0.1)
+  dvr <- rnorm(n = ntot, mean = mm %*% coeff, sd = 0.1)
   
-  testdatx <- data.frame(bb, ind = i, 
+  testdatx <- data.frame(dvr, ind = i, 
                          tx, bud)
   
   testdat <- rbind(testdat, testdatx)  

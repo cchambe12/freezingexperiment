@@ -20,7 +20,7 @@ library(rstanarm)
 
 # Setting working directory. Add in your own path in an if statement for your file structure
 setwd("~/Documents/git/freezingexperiment/analyses/")
-source('stan/savestan.R')
+source('scripts/savestan.R')
 
 rstan_options(auto_write = TRUE)
 options(mc.cores = parallel::detectCores())
@@ -30,18 +30,20 @@ options(mc.cores = parallel::detectCores())
 #### get the data
 
 # make sure this is the correct file (we're still cleaning as I write this!) 
-bb <- read.csv("output/birches_buddata.csv", header=TRUE)
-bb <- subset(bb, bb$species=="BETPOP")
+#bb <- read.csv("output/birches_buddata.csv", header=TRUE)
+#bb <- subset(bb, bb$species=="BETPOP")
+bb<-read.csv("output/FakeBuds2L.csv", header=TRUE)
 
 ## make a bunch of things numeric 
-bb$tx <- as.numeric(bb$frost)
-bb$bud <- as.numeric(bb$bud)
+bb$tx <- as.numeric(bb$tx)
+bb$sp <- as.numeric(bb$sp)
 bb$resp <- as.numeric(bb$dvr)
+bb$ind <- as.numeric(bb$ind)
 
 
 ## subsetting data, preparing genus variable, removing NAs
-ospr.prepdata <- subset(bb, select=c("resp", "tx", "bud", "individ"))
-dim(subset(bb, is.na(tx)==FALSE & is.na(bud)==FALSE))
+ospr.prepdata <- subset(bb, select=c("dvr", "tx", "sp", "ind"))
+#dim(subset(bb, is.na(dvr)==FALSE & is.na(ind)==FALSE))
 ospr.stan <- ospr.prepdata[complete.cases(ospr.prepdata),]
 
 
@@ -50,29 +52,30 @@ ospr.stan <- ospr.prepdata[complete.cases(ospr.prepdata),]
 ## remove NAs individually .... (not needed currently)
 #ospr.stan$bud<-ospr.stan[which(is.na(ospr.stan$bud)==FALSE),]
 #ospr.stan$tx<-ospr.stan[which(is.na(ospr.stan$tx)==FALSE),]
-ospr.stan$individ <- as.numeric(as.factor(ospr.stan$individ))
+ospr.stan$ind <- as.numeric(as.factor(ospr.stan$ind))
 
 
-y = ospr.stan$resp
+dvr = ospr.stan$dvr
 tx = ospr.stan$tx
-ind = ospr.stan$individ
-bud = ospr.stan$bud
-N = length(y)
-n_ind = length(unique(ospr.stan$individ))
+ind = ospr.stan$ind
+sp = ospr.stan$sp
+N = length(dvr)
+n_ind = length(unique(ospr.stan$ind))
+n_sp = length(unique(ospr.stan$sp))
 
 
 # making a list out of the processed data. It will be input for the model
-datalist.td <- list(y=y,tx=tx, bud=bud,ind=ind,N=N,n_ind=n_ind)
+datalist.td <- list(dvr=dvr,tx=tx, sp=sp,ind=ind,N=N,n_ind=n_ind, n_sp=n_sp)
 
 
 
 ##############################
 ###### real data all chilling
-osp.td4 = stan('scripts/Buds_individLevel.stan', data = datalist.td,
-               iter = 2000,warmup=1500,control=list(adapt_delta=0.99)) 
+osp.td4 = stan('scripts/buds_sp_pred_poola.stan', data = datalist.td,
+               iter = 3000,warmup=3000,control=list(adapt_delta=0.99)) 
 
-betas <- as.matrix(osp.td4, pars = c("mu_b_tx_ind","mu_b_bud_ind",
-"b_tx", "b_bud"))
+betas <- as.matrix(osp.td4, pars = c("mu_b_tx","mu_b_sp",
+"b_tx", "b_sp"))
 mcmc_intervals(betas[,1:4])
 
 launch_shinystan(osp.td4)
@@ -83,8 +86,8 @@ shinystan_multiparam_gg
 td4 <- summary(osp.td4)$summary
 preds.4<-td4[grep("yhat", rownames(td4)),]
 
-save(td4, file="output/Buds_individLevel.Rda")
-
+#save(td4, file="output/Buds_individLevel.Rda")
+save(osp.td4, file="~/Documents/git/freezingexperiment/analyses/output/buds_2level_fakedata.Rda")
 
 
 ######################################
