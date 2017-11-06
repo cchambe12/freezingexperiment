@@ -24,6 +24,7 @@ setwd("~/Documents/git/freezingexperiment/analyses")
 budspp<-read.csv("output/birches_speciesdata.csv", header=TRUE)
 whole<-read.csv("input/bbch_data.csv", header=TRUE)
 to.keep<-read.csv("..//planting/freezing_planting.csv", header=TRUE)
+budspp<-read.csv("input/Buds_clean.csv", header=TRUE)
 
 bb<-budspp[!is.na(budspp$dvr),]
 bb$avg.rate<-ave(bb$dvr, bb$individ)

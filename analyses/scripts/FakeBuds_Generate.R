@@ -15,7 +15,7 @@ bb <- read.csv("..//output/birches_buddata.csv", header=TRUE)
 # Set up: same as experiment, with two sites, 28 species, two levels each of warming and photoperiod, and three levels of chilling. 2016-04-01 adding interactions. This ends up generating expected differences, but variation in effect sizes across species is minimal currently.
 # <> <> <> <> <> <> <> <> <> <> <> <> <> <> <> <> <> <> <> <>
 
-nsp = 2
+nsp = 3
 
 ntx = 2
 #nbud = 22

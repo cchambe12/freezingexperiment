@@ -5,24 +5,19 @@
 data {
   int<lower=0> N;
   int<lower=0> n_ind;
-  int<lower=0> n_sp;
   int<lower=1, upper=n_ind> ind[N];
   vector[N] dvr;
   vector[N] tx;
-  vector[N] sp;
 }
 
 parameters {
   vector[n_ind] a_ind;
   vector[n_ind] b_tx;
-  vector[n_ind] b_sp;
 
   real mu_a; 
   real mu_b_tx;
-  real mu_b_sp;
 
   real<lower=0> sigma_b_tx;
-  real<lower=0> sigma_b_sp;
 
   real<lower=0> sigma_a;
     
@@ -35,7 +30,6 @@ transformed parameters { // Vectorize: Won't save time probably here (no scalar 
 		
 	for(i in 1:N){
 		y_hat[i] = a_ind[ind[i]] + 
-		b_sp[ind[i]] * sp[i] + 
 		b_tx[ind[i]] * tx[i] 
 		;
 				
@@ -46,15 +40,12 @@ transformed parameters { // Vectorize: Won't save time probably here (no scalar 
 model {
 	// Priors. Make them flat
 	mu_b_tx ~ normal(0, 15); 
-	mu_b_sp ~ normal(0, 15);
 	
 	sigma_b_tx ~ normal(0, 5);
-	sigma_b_sp ~ normal(0, 5);
 
 	a_ind ~ normal(mu_a, sigma_a);  // SHOULD ADD PRIORS!
 	
 	b_tx ~ normal(mu_b_tx, sigma_b_tx);
-	b_sp ~ normal(mu_b_sp, sigma_b_sp);
 	
 	dvr ~ normal(y_hat, sigma_y);
 

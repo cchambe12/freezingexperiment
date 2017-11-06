@@ -120,13 +120,22 @@ mod1<-lmer(dvr~tx+(1|species), data=risk)
 display(mod1)
 betula<-c("BETPOP", "BETPAP")
 birch<-subset(risk, risk$species%in%betula)
+
+birch<-read.csv("output/birches_buddata.csv", header=TRUE)
 mod2<-glm(dvr~bud+species+frost, data=birch)
 display(mod2)
 mod3<-glm(dvr~species+bud*tx, data=birch)
 display(mod3)
 mod4<-lmer(dvr~tx + (1|species), data=birch)
 display(mod4)
-bpap<-ggplot(birch, aes(x=bud, y=dvr, color=tx)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
+risk$bud<-as.numeric(risk$bud)
+birch$bud<-as.numeric(birch$bud)
+bpap<-ggplot(birch, aes(x=bud, y=dvr, color=as.factor(frost))) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
+ggplot(risk, aes(x=bud, y=dvr, color=tx)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
+mod<-lmer(dvr~tx+species+(1|individ), data=risk)
+display(mod)
+mod1<-lmer(dvr~as.factor(frost)+species+(1|individ), data=birch)
+display(mod1)
 
 birch$bud
 birch$z_bud<-(birch$bud - mean(birch$bud))/sd(birch$bud)
@@ -185,6 +194,18 @@ display(new.mod)
 #write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_buddata.csv"), row.names=FALSE)
 #write.csv(birch, file=("~/Documents/git/freezingexperiment/analyses/output/birches_speciesdata.csv"), row.names=FALSE)
 
+birch$ind<-as.numeric(as.factor(birch$ind))
+bb<-birch
+bb<-dplyr::select(bb,species, individ, tx)
+bb<-bb[!duplicated(bb),]
+bb<-dplyr::select(bb, -individ)
+bb$ind<- count(bb, by=c("species", "tx"))
+bb$ind <- ave(
+  bb$species, bb$tx,
+  FUN=function(x) cumsum(c(0, head(x, -1)))
+)
+
+stan_glmer(dvr~tx+species+(1|individ), data=birch)
 
 
 

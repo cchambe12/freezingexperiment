@@ -30,19 +30,21 @@ options(mc.cores = parallel::detectCores())
 #### get the data
 
 # make sure this is the correct file (we're still cleaning as I write this!) 
-#bb <- read.csv("output/birches_buddata.csv", header=TRUE)
-#bb <- subset(bb, bb$species=="BETPOP")
-bb<-read.csv("output/FakeBuds2L.csv", header=TRUE)
+bb <- read.csv("output/birches_buddata.csv", header=TRUE)
+bb <- subset(bb, bb$species=="BETPOP")
+bb<-read.csv("output/birches_speciesdata.csv", header=TRUE)
 
 ## make a bunch of things numeric 
-bb$tx <- as.numeric(bb$tx)
-bb$sp <- as.numeric(bb$sp)
-bb$resp <- as.numeric(bb$dvr)
-bb$ind <- as.numeric(bb$ind)
+#bb$tx<-ifelse(bb$tx=="A", 0, 1)
+bb$tx <- as.numeric(as.factor(bb$frost))
+#bb$sp <- as.numeric(as.factor(bb$sp))
+bb$dvr <- as.numeric(bb$dvr)
+bb$ind<-substr(bb$individ, 9,10)
+bb$ind <- as.numeric(as.factor(bb$bud))
 
 
 ## subsetting data, preparing genus variable, removing NAs
-ospr.prepdata <- subset(bb, select=c("dvr", "tx", "sp", "ind"))
+ospr.prepdata <- subset(bb, select=c("dvr", "tx", "ind")) # removed "sp" when doing just one species
 #dim(subset(bb, is.na(dvr)==FALSE & is.na(ind)==FALSE))
 ospr.stan <- ospr.prepdata[complete.cases(ospr.prepdata),]
 
@@ -58,14 +60,14 @@ ospr.stan$ind <- as.numeric(as.factor(ospr.stan$ind))
 dvr = ospr.stan$dvr
 tx = ospr.stan$tx
 ind = ospr.stan$ind
-sp = ospr.stan$sp
+#sp = ospr.stan$sp
 N = length(dvr)
 n_ind = length(unique(ospr.stan$ind))
-n_sp = length(unique(ospr.stan$sp))
+#n_sp = length(unique(ospr.stan$sp))
 
 
 # making a list out of the processed data. It will be input for the model
-datalist.td <- list(dvr=dvr,tx=tx, sp=sp,ind=ind,N=N,n_ind=n_ind, n_sp=n_sp)
+datalist.td <- list(dvr=dvr,tx=tx,ind=ind,N=N,n_ind=n_ind) # removed sp=sp and n_sp=s_sp for one species
 
 
 
@@ -74,12 +76,16 @@ datalist.td <- list(dvr=dvr,tx=tx, sp=sp,ind=ind,N=N,n_ind=n_ind, n_sp=n_sp)
 osp.td4 = stan('scripts/buds_sp_pred_poola.stan', data = datalist.td,
                iter = 3000,warmup=3000,control=list(adapt_delta=0.99)) 
 
-betas <- as.matrix(osp.td4, pars = c("mu_b_tx","mu_b_sp",
-"b_tx", "b_sp"))
+osp.td4 = stan('scripts/buds_onespp_poola.stan', data = datalist.td,
+               iter = 3000,warmup=3000,control=list(adapt_delta=0.99)) 
+
+betas <- as.matrix(osp.td4, pars = c("mu_b_tx",
+"b_tx"))
 mcmc_intervals(betas[,1:4])
 
 launch_shinystan(osp.td4)
 load("/Users/CatherineChamberlain/Downloads/shinystan-multiparam-gg.RData")
+load("~/Documents/git/freezingexperiment/analyses/output/buds_2level_fakedata.Rda")
 shinystan_multiparam_gg
 
 
