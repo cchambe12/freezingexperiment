@@ -33,18 +33,21 @@ options(mc.cores = parallel::detectCores())
 bb <- read.csv("output/birches_buddata.csv", header=TRUE)
 bb <- subset(bb, bb$species=="BETPOP")
 bb<-read.csv("output/birches_speciesdata.csv", header=TRUE)
+bb<-read.csv("output/birches_clean.csv", header=TRUE)
+bb<-read.csv("output/FakeBuds2L.csv", header=TRUE)
 
 ## make a bunch of things numeric 
-#bb$tx<-ifelse(bb$tx=="A", 0, 1)
-bb$tx <- as.numeric(as.factor(bb$frost))
-#bb$sp <- as.numeric(as.factor(bb$sp))
+bb$tx<-ifelse(bb$tx=="A", 0, 1)
+#bb$tx <- as.numeric(as.factor(bb$tx))
+bb$sp <- as.numeric(as.factor(bb$sp))
 bb$dvr <- as.numeric(bb$dvr)
 bb$ind<-substr(bb$individ, 9,10)
 bb$ind <- as.numeric(as.factor(bb$bud))
 
 
+
 ## subsetting data, preparing genus variable, removing NAs
-ospr.prepdata <- subset(bb, select=c("dvr", "tx", "ind")) # removed "sp" when doing just one species
+ospr.prepdata <- subset(bb, select=c("dvr", "tx", "ind", "sp")) # removed "sp" when doing just one species
 #dim(subset(bb, is.na(dvr)==FALSE & is.na(ind)==FALSE))
 ospr.stan <- ospr.prepdata[complete.cases(ospr.prepdata),]
 
@@ -60,28 +63,33 @@ ospr.stan$ind <- as.numeric(as.factor(ospr.stan$ind))
 dvr = ospr.stan$dvr
 tx = ospr.stan$tx
 ind = ospr.stan$ind
-#sp = ospr.stan$sp
+sp = ospr.stan$sp
 N = length(dvr)
 n_ind = length(unique(ospr.stan$ind))
-#n_sp = length(unique(ospr.stan$sp))
+n_sp = length(unique(ospr.stan$sp))
 
 
 # making a list out of the processed data. It will be input for the model
-datalist.td <- list(dvr=dvr,tx=tx,ind=ind,N=N,n_ind=n_ind) # removed sp=sp and n_sp=s_sp for one species
+datalist.td <- list(dvr=dvr,tx=tx,sp=sp, ind=ind,N=N,n_ind=n_ind, n_sp=n_sp) # removed sp=sp and n_sp=s_sp for one species
 
 
 
 ##############################
 ###### real data all chilling
 osp.td4 = stan('scripts/buds_sp_pred_poola.stan', data = datalist.td,
-               iter = 3000,warmup=3000,control=list(adapt_delta=0.99)) 
+               iter = 3000,warmup=1500,control=list(adapt_delta=0.99)) 
+
+mod1<-stan_glmer(dvr~tx+sp+(1|ind), data=ospr.stan)
+pred_1 <- posterior_predict(mod1)  # point predictions
+earnings_imp_1 <- impute(earnings, pred_1)
 
 osp.td4 = stan('scripts/buds_onespp_poola.stan', data = datalist.td,
                iter = 3000,warmup=3000,control=list(adapt_delta=0.99)) 
 
-betas <- as.matrix(osp.td4, pars = c("mu_b_tx",
-"b_tx"))
-mcmc_intervals(betas[,1:4])
+betas <- as.matrix(osp.td4, pars = c("mu_b_tx", "mu_b_sp"))
+mcmc_intervals(betas[,1:2])
+betas <- as.matrix(mod1, pars = c("mu_b_tx", "mu_b_sp"))
+
 
 launch_shinystan(osp.td4)
 load("/Users/CatherineChamberlain/Downloads/shinystan-multiparam-gg.RData")
@@ -93,7 +101,7 @@ td4 <- summary(osp.td4)$summary
 preds.4<-td4[grep("yhat", rownames(td4)),]
 
 #save(td4, file="output/Buds_individLevel.Rda")
-save(osp.td4, file="~/Documents/git/freezingexperiment/analyses/output/buds_2level_fakedata.Rda")
+save(osp.td4, file="~/Documents/git/freezingexperiment/analyses/output/buds_2level_real.Rda")
 
 
 ######################################

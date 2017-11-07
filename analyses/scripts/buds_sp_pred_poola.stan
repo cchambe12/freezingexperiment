@@ -10,6 +10,7 @@ data {
   vector[N] dvr;
   vector[N] tx;
   vector[N] sp;
+  
 }
 
 parameters {
@@ -27,10 +28,11 @@ parameters {
   real<lower=0> sigma_a;
     
   real<lower=0> sigma_y; 
-  }
+  
+}
 
 
-transformed parameters { // Vectorize: Won't save time probably here (no scalar x vector)
+transformed parameters { 
 		vector[N] y_hat;
 		
 	for(i in 1:N){
@@ -45,13 +47,13 @@ transformed parameters { // Vectorize: Won't save time probably here (no scalar 
 
 model {
 	// Priors. Make them flat
-	mu_b_tx ~ normal(0, 15); 
-	mu_b_sp ~ normal(0, 15);
+	mu_b_tx ~ normal(0, 5); 
+	mu_b_sp ~ normal(0, 2);
 	
-	sigma_b_tx ~ normal(0, 5);
-	sigma_b_sp ~ normal(0, 5);
+	sigma_b_tx ~ normal(0, 1);
+	sigma_b_sp ~ normal(0, .5);
 
-	a_ind ~ normal(mu_a, sigma_a);  // SHOULD ADD PRIORS!
+	a_ind ~ normal(mu_a, sigma_a);  
 	
 	b_tx ~ normal(mu_b_tx, sigma_b_tx);
 	b_sp ~ normal(mu_b_sp, sigma_b_sp);

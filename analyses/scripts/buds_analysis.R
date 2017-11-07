@@ -15,6 +15,10 @@ library(lubridate)
 library(lme4)
 library(arm)
 library(gridExtra)
+library( data.table )
+library(rstan)
+library(rstanarm)
+
 
 
 # Set Working Directory
@@ -128,10 +132,17 @@ mod3<-glm(dvr~species+bud*tx, data=birch)
 display(mod3)
 mod4<-lmer(dvr~tx + (1|species), data=birch)
 display(mod4)
-risk$bud<-as.numeric(risk$bud)
+
 birch$bud<-as.numeric(birch$bud)
-bpap<-ggplot(birch, aes(x=bud, y=dvr, color=as.factor(frost))) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
-ggplot(risk, aes(x=bud, y=dvr, color=tx)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
+birch<-birch[!is.na(birch$dvr),]
+birch<-birch[birch$dvr>0,]
+bpap<-ggplot(birch, aes(x=bud, y=dvr, color=as.factor(tx))) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
+
+
+dvr_bb<-risk[!is.na(risk$dvr),]
+dvr_bb<-risk[risk$dvr>0,]
+#write.csv(risk, file="~/Documents/git/freezingexperiment/analyses/output/budsdvr_all.csv", row.names = FALSE)
+ggplot(dvr_bb, aes(x=bud, y=dvr, color=tx)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
 mod<-lmer(dvr~tx+species+(1|individ), data=risk)
 display(mod)
 mod1<-lmer(dvr~as.factor(frost)+species+(1|individ), data=birch)
@@ -179,13 +190,49 @@ for(i in c(1:nrow(percent))){
 }
 
 percent$species<-substr(percent$individ, 1, 6)
-percent<-subset(percent, species %in% betula)
+#percent<-subset(percent, species %in% betula)
 mod<-lm(perc.bb~tx+species, data=percent)
 display(mod)
 
-qplot(species, perc.bb, data = percent, 
+#percent$ind<-as.numeric(as.factor(percent$individ))
+p<-percent
+p<-dplyr::select(p,species, individ, tx)
+p<-p[!duplicated(p),]
+pt <- data.table(p)
+pt<-pt[,ind := 1:.N , by = c("species" , "tx") ]
+percent<-dplyr::select(percent, species, individ, tx, perc.bb)
+px<-left_join(percent, pt)
+
+#percent$individ<-as.numeric(as.factor(percent$individ))
+ggplot(px, aes(x=ind, y=perc.bb, color=tx)) + geom_point() + geom_smooth(method="lm") + facet_wrap(~species)
+
+qplot(species, perc.bb, data = px, 
       geom = "boxplot", color=tx) + 
   xlab("Species")+ylab("Percent Budburst")
+
+
+fit1<-stan_glm(perc.bb~tx+species, data=px)
+fit1<-stan_glm(perc.bb~tx+species+tx*species, data=px)
+fit1
+
+sp<-c("BETPAP", "BETPOP")
+pb<-filter(px, species %in% sp)
+fit.b<-stan_glm(perc.bb~tx+species+tx*species, data=pb)
+fit.b
+
+pb$mean<-ave(pb$perc.bb, pb$species, pb$tx)
+pb$sd<-ave(pb$perc.bb, pb$species, pb$tx, FUN=sd)
+
+ggplot(pb, aes(x=perc.bb, y=ind)) + 
+  geom_linerange(aes(ymin=perc.bb-sd, ymax=perc.bb+sd, color=tx, shape=species), alpha=0.3) + 
+  geom_point(aes(shape=species, color=tx)) + ylab("Percent Budburst") +
+  xlab("Individual") + 
+  geom_hline(yintercept=0, linetype=2) + coord_flip() + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+        panel.background = element_blank(), axis.line = element_line(colour = "black")) 
+plot(fit.b)
+abline(v=0)
+pp_check (fit.b, nreps=30)
 
 birch$ind<-substr(birch$individ, 9, 10)
 new.mod<-lmer(dvr~frost+bud+(1|species), data=birch)
@@ -198,13 +245,13 @@ birch$ind<-as.numeric(as.factor(birch$ind))
 bb<-birch
 bb<-dplyr::select(bb,species, individ, tx)
 bb<-bb[!duplicated(bb),]
-bb<-dplyr::select(bb, -individ)
-bb$ind<- count(bb, by=c("species", "tx"))
-bb$ind <- ave(
-  bb$species, bb$tx,
-  FUN=function(x) cumsum(c(0, head(x, -1)))
-)
+bt <- data.table(bb)
+bt<-bt[,ind := 1:.N , by = c("species" , "tx") ]
+birch<-dplyr::select(birch, species, individ, bud, tx, dvr, frost)
+bx<-left_join(birch, bt)
 
+
+#write.csv(bx, file="~/Documents/git/freezingexperiment/analyses/output/birches_clean.csv", row.names = FALSE)
 stan_glmer(dvr~tx+species+(1|individ), data=birch)
 
 

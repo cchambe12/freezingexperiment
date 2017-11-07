@@ -39,8 +39,8 @@ sd(bpop$dvr, na.rm=TRUE) #4.800012
 
 nrep <- 22
 nind <- 7; ind_sd<-0.1
-nsp <- 2; sp_sd<-0.3
-ntx <- 2; tx_sd<-1
+nsp = 2; sp_sd=0.1
+ntx = 2; tx_sd=2
 
 
 ## Generate Random Y Response Data that follows studies nesting structure
@@ -71,6 +71,8 @@ fake_data$tx[fake_data$tx==2] <- 1
 
 mean(fake_data$dvr)
 sd(fake_data$dvr)
+
+summary(lmer(dvr~tx+species+(1|ind), data=fake_data))
 
 save(list=c("fake_data"), file = "FakeBuds_apply.RData")
 #write.csv(fake_data, file="~/Documents/git/freezingexperiment/analyses/output/FakeBuds_apply.csv", row.names = FALSE)
