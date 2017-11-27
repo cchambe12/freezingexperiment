@@ -40,27 +40,29 @@ sd(bpop$dvr, na.rm=TRUE) #4.800012
 nrep <- 22
 nind <- 7; ind_sd<-0.1
 nsp = 2; sp_sd=0.1
-ntx = 2; tx_sd=2
+ntx = 2; tx_sd=0.1
 
 
 ## Generate Random Y Response Data that follows studies nesting structure
-rep_means <- rnorm(nrep, mean = 11, sd = 3)
-ind_means <- lapply(rep_means, function(x) rnorm(nind, mean = x, sd = ind_sd))
-sp_means <- lapply(ind_means, function(x) rnorm(nsp, mean = x, sd = sp_sd) )
-tx_means <- lapply(unlist(sp_means), function(x) rnorm(ntx, mean = x, sd = tx_sd))
+rep_means <- rnorm(nrep, mean = 11, sd = 1)
+tx_means <- lapply(rep_means, function(x) rnorm(ntx, mean = x, sd = tx_sd))
+sp_means <- lapply(tx_means, function(x) rnorm(ntx, mean = x, sd = sp_sd) )
+ind_means <- lapply(unlist(sp_means), function(x) rnorm(nsp, mean = x, sd = ind_sd))
+
+
 
 
 ## Put Together X Predictor Matrix
 ntot <-  nsp * ntx * nind * nrep
-x_mat <- data.frame(buds = rep(1:(nrep), each = ntot/nrep),
-                    species = rep(1:(nsp), each = nrep*nind*nsp),
+x_mat <- data.frame(#buds = rep(1:(nrep), each = ntot/nrep),
+                    sp = rep(1:(nsp), each = nrep*nind*nsp),
                     tx =   rep( 1:(ntx), each=nsp*nind),
                     ind =  rep(1:(nind), each=nrep))
 
 ## Add in response for full fake dataset
-x_mat <- x_mat[order(x_mat$species, x_mat$tx, x_mat$ind),]
+x_mat <- x_mat[order(x_mat$sp, x_mat$tx, x_mat$ind),]
 #x_mat$dvr<-rnorm(n_pops, mean = 11, sd = 5)
-x_mat$dvr <- unlist(tx_means)
+x_mat$dvr <- unlist(rep_means)
 fake_data <- x_mat
 
 # now fix the levels to 0/1 (not 1/2) as R does
@@ -72,7 +74,7 @@ fake_data$tx[fake_data$tx==2] <- 1
 mean(fake_data$dvr)
 sd(fake_data$dvr)
 
-summary(lmer(dvr~tx+species+(1|ind), data=fake_data))
+summary(lmer(dvr~tx+sp+(1|ind), data=fake_data))
 
 save(list=c("fake_data"), file = "FakeBuds_apply.RData")
 #write.csv(fake_data, file="~/Documents/git/freezingexperiment/analyses/output/FakeBuds_apply.csv", row.names = FALSE)

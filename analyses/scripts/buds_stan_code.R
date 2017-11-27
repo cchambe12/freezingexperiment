@@ -42,7 +42,7 @@ bb$tx<-ifelse(bb$tx=="A", 0, 1)
 bb$sp <- as.numeric(as.factor(bb$sp))
 bb$dvr <- as.numeric(bb$dvr)
 bb$ind<-substr(bb$individ, 9,10)
-bb$ind <- as.numeric(as.factor(bb$bud))
+#bb$ind <- as.numeric(as.factor(bb$bud))
 
 
 
