@@ -28,45 +28,29 @@ options(mc.cores = parallel::detectCores())
 
 ########################
 #### get the data
-
-# make sure this is the correct file (we're still cleaning as I write this!) 
-bb <- read.csv("output/birches_buddata.csv", header=TRUE)
-bb <- subset(bb, bb$species=="BETPOP")
-bb<-read.csv("output/birches_speciesdata.csv", header=TRUE)
 bb<-read.csv("output/birches_clean.csv", header=TRUE)
 bb<-read.csv("output/FakeBuds2L.csv", header=TRUE)
 
 ## make a bunch of things numeric 
 bb$tx<-ifelse(bb$tx=="A", 0, 1)
-#bb$tx <- as.numeric(as.factor(bb$tx))
 bb$sp <- as.numeric(as.factor(bb$sp))
 bb$dvr <- as.numeric(bb$dvr)
 bb$ind<-substr(bb$individ, 9,10)
-#bb$ind <- as.numeric(as.factor(bb$bud))
-
 
 
 ## subsetting data, preparing genus variable, removing NAs
-ospr.prepdata <- subset(bb, select=c("dvr", "tx", "ind", "sp")) # removed "sp" when doing just one species
-#dim(subset(bb, is.na(dvr)==FALSE & is.na(ind)==FALSE))
-ospr.stan <- ospr.prepdata[complete.cases(ospr.prepdata),]
+dvr.prepdata <- subset(bb, select=c("dvr", "tx", "ind", "sp")) # removed "sp" when doing just one species
+dvr.stan <- dvr.prepdata[complete.cases(dvr.prepdata),]
 
+dvr.stan$ind <- as.numeric(as.factor(dvr.stan$ind))
 
-# Fairly strict rules of inclusion in this analysis:
-
-## remove NAs individually .... (not needed currently)
-#ospr.stan$bud<-ospr.stan[which(is.na(ospr.stan$bud)==FALSE),]
-#ospr.stan$tx<-ospr.stan[which(is.na(ospr.stan$tx)==FALSE),]
-ospr.stan$ind <- as.numeric(as.factor(ospr.stan$ind))
-
-
-dvr = ospr.stan$dvr
-tx = ospr.stan$tx
-ind = ospr.stan$ind
-sp = ospr.stan$sp
+dvr = dvr.stan$dvr
+tx = dvr.stan$tx
+ind = dvr.stan$ind
+sp = dvr.stan$sp
 N = length(dvr)
-n_ind = length(unique(ospr.stan$ind))
-n_sp = length(unique(ospr.stan$sp))
+n_ind = length(unique(dvr.stan$ind))
+n_sp = length(unique(dvr.stan$sp))
 
 
 # making a list out of the processed data. It will be input for the model
@@ -75,75 +59,39 @@ datalist.td <- list(dvr=dvr,tx=tx,sp=sp, ind=ind,N=N,n_ind=n_ind, n_sp=n_sp) # r
 
 
 ##############################
-###### real data all chilling
-osp.td4 = stan('scripts/buds_sp_pred_poola.stan', data = datalist.td,
-               iter = 3000,warmup=1500,control=list(adapt_delta=0.99)) 
+###### real data rstanarm first
 
-mod1<-stan_glmer(dvr~tx+sp+(1|ind), data=ospr.stan)
-pred_1 <- posterior_predict(mod1)  # point predictions
-earnings_imp_1 <- impute(earnings, pred_1)
+fit1<-stan_glmer(dvr~tx+sp+(1|ind), data=dvr.stan)
+fit1
+plot(fit1, pars="beta")
+pp_check(fit1)
 
-osp.td4 = stan('scripts/buds_onespp_poola.stan', data = datalist.td,
-               iter = 3000,warmup=3000,control=list(adapt_delta=0.99)) 
+### Another posterior predictive check
+yrep <- posterior_predict(fit1)
+all.equal(ncol(yrep), nobs(fit1)) # TRUE
+nd <- data.frame(dvr = mean(ospr.stan$dvr), tx, sp, ind)
+ytilde <- posterior_predict(fit1, newdata = nd)
+all.equal(ncol(ytilde), nrow(nd)) # TRUE
 
-betas <- as.matrix(osp.td4, pars = c("mu_b_tx", "mu_b_sp"))
+#### Now using rstan model
+dvr.td4 = stan('scripts/buds_sp_pred_poola.stan', data = datalist.td,
+               iter = 8000,warmup=4000,control=list(adapt_delta=0.99), chains=4) 
+betas <- as.matrix(dvr.td4, pars = c("mu_b_tx", "mu_b_sp"))
 mcmc_intervals(betas[,1:2])
-betas <- as.matrix(mod1, pars = c("mu_b_tx", "mu_b_sp"))
 
+y<-dvr.stan$dvr
+yrep_td4 <- posterior_predict(dvr.td4$y_hat, draws = 500)
+dim(yrep)
+color_scheme_set("brightblue")
+ppc_dens_overlay(y, yrep[1:30, ])
+ppc_hist(y, yrep[1:30,])
 
-launch_shinystan(osp.td4)
-load("/Users/CatherineChamberlain/Downloads/shinystan-multiparam-gg.RData")
-load("~/Documents/git/freezingexperiment/analyses/output/buds_2level_fakedata.Rda")
-shinystan_multiparam_gg
+launch_shinystan(dvr.td4)
 
-
-td4 <- summary(osp.td4)$summary
+td4 <- summary(dvr.td4)$summary # yhats around 1! double yay!
 preds.4<-td4[grep("yhat", rownames(td4)),]
 
 #save(td4, file="output/Buds_individLevel.Rda")
 save(osp.td4, file="~/Documents/git/freezingexperiment/analyses/output/buds_2level_real.Rda")
 
-
-######################################
-###### real data all chilling sigmoid
-osp.td5 = stan('stan/bb/M1_daysBBnointer_2level_interceptonly_sigmoid.stan', data = datalist.td,
-               iter = 2000,warmup=1500,control=list(adapt_delta=0.95)) 
-
-betas.td5 <- as.matrix(osp.td5, pars = c("b_force", "b_photo","a_chill", "b_chill"))
-mcmc_intervals(betas[,1:5])
-
-#td5 <- summary(osp.td5)$summary
-#preds.5<-td5[grep("yhat", rownames(td5)),]
-
-
-
-########### Running the models with fake data
-#setwd("~/Documents/git/projects/treegarden/budreview/ospree/analyses/bb_analysis")
-source("bb_analysis/bb_testdata_generate.R")
-
-# lme version
-summary(lme1 <- lmer(bb ~ chill+force+photo + (1|sp), data = testdat)) 
-ranef(lme1)
-fixef(lme1)
-#head(testdat)
-#head(list.coeffs)
-
-##
-# try the model
-datalist.td <- with(testdat, 
-                    list(y = bb, 
-                         chill = as.numeric(chill), 
-                         force = as.numeric(force), 
-                         photo = as.numeric(photo),
-                         sp = as.numeric(sp),
-                         N = nrow(testdat),
-                         n_sp = length(unique(sp))
-                    )
-)
-
-
-
-## running model with fake data
-osp.td2 = stan('stan/bb/M1_daysBBnointer_2level.stan', data = datalist.td, 
-             iter = 2000,warmup=1500,control=list(adapt_delta=0.90)) 
 

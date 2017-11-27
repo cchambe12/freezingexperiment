@@ -1,5 +1,5 @@
-// Stan Model for Buds analysis - first stab, use buds as reps and have two levels of hierarchy
-// 1st is individual and 2nd is species
+// Stan Model for Buds analysis - first stab, use buds as reps and have one level of hierarchy
+// 1st is individual
 // Based off Danf's and Lizzie's stan models for chilling experiment
 
 data {
@@ -47,11 +47,11 @@ transformed parameters {
 
 model {
 	// Priors. Make them flat
-	mu_b_tx ~ normal(0, 5); 
-	mu_b_sp ~ normal(0, 2);
+	mu_b_tx ~ normal(0, 15); 
+	mu_b_sp ~ normal(0, 15);
 	
-	sigma_b_tx ~ normal(0, 1);
-	sigma_b_sp ~ normal(0, .5);
+	sigma_b_tx ~ normal(0, 10);
+	sigma_b_sp ~ normal(0, 10);
 
 	a_ind ~ normal(mu_a, sigma_a);  
 	
