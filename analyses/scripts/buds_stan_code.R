@@ -29,7 +29,7 @@ options(mc.cores = parallel::detectCores())
 ########################
 #### get the data
 bb<-read.csv("output/birches_clean.csv", header=TRUE)
-bb<-read.csv("output/FakeBuds2L.csv", header=TRUE)
+bb<-read.csv("output/fakedata_exp.csv", header=TRUE)
 
 ## make a bunch of things numeric 
 bb$tx<-ifelse(bb$tx=="A", 0, 1)
@@ -69,29 +69,45 @@ pp_check(fit1)
 ### Another posterior predictive check
 yrep <- posterior_predict(fit1)
 all.equal(ncol(yrep), nobs(fit1)) # TRUE
-nd <- data.frame(dvr = mean(ospr.stan$dvr), tx, sp, ind)
+nd <- data.frame(dvr = mean(dvr.stan$dvr), tx, sp, ind)
 ytilde <- posterior_predict(fit1, newdata = nd)
 all.equal(ncol(ytilde), nrow(nd)) # TRUE
 
 #### Now using rstan model
+# Had divergent transitions and the number would vary each time, I increased the warmup and now there are 4
+# divergent transitions
 dvr.td4 = stan('scripts/buds_sp_pred_poola.stan', data = datalist.td,
-               iter = 8000,warmup=4000,control=list(adapt_delta=0.99), chains=4) 
+               iter = 8000,warmup=6000,control=list(adapt_delta=0.99), chains=4) 
 betas <- as.matrix(dvr.td4, pars = c("mu_b_tx", "mu_b_sp"))
 mcmc_intervals(betas[,1:2])
 
-y<-dvr.stan$dvr
-yrep_td4 <- posterior_predict(dvr.td4$y_hat, draws = 500)
-dim(yrep)
-color_scheme_set("brightblue")
-ppc_dens_overlay(y, yrep[1:30, ])
-ppc_hist(y, yrep[1:30,])
 
-launch_shinystan(dvr.td4)
+posterior<-extract(dvr.td4, 'y_hat')
+y_pred <- as.matrix(unlist(y_pred, use.names=FALSE))
+color_scheme_set("brightblue")
+#pp<-mcmc_trace(posterior, pars=c("mu_b_tx", "mu_b_sp"), n_warmup=6000, facet_args = list(nrow = 2,
+                                                                                #labeller=label_parsed))
+#pp+facet_text(size = 15)
+mcmc_areas(posterior,
+           pars = c("mu_b_tx", "mu_b_sp"),
+           prob = 0.8) 
+
+ppc_intervals(
+  y = dvr.stan$dvr,
+  yrep = posterior_predict(fit1),
+  x = dvr.stan$tx,
+  prob = 0.5
+) +
+  panel_bg(fill="gray95", color=NA) +
+  grid_lines(color="white") +
+  labs(x = "Treatment", y = "Duration of Vegetative Risk")
+
+#launch_shinystan(dvr.td4) # use for posterior predictive checks
 
 td4 <- summary(dvr.td4)$summary # yhats around 1! double yay!
 preds.4<-td4[grep("yhat", rownames(td4)),]
 
 #save(td4, file="output/Buds_individLevel.Rda")
-save(osp.td4, file="~/Documents/git/freezingexperiment/analyses/output/buds_2level_real.Rda")
+#save(dvr.td4, file="~/Documents/git/freezingexperiment/analyses/output/buds_2level_real.Rda")
 
 
