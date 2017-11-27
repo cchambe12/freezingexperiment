@@ -217,6 +217,7 @@ fit1
 
 sp<-c("BETPAP", "BETPOP")
 pb<-filter(px, species %in% sp)
+#write.csv(pb, file="~/Documents/git/freezingexperiment/analyses/output/percentBB_betula.csv", row.names = FALSE)
 fit.b<-stan_glm(perc.bb~tx+species+tx*species, data=pb)
 fit.b
 
