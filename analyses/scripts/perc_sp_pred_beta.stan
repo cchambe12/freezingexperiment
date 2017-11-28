@@ -7,48 +7,37 @@ data {
   int<lower=0> N;
   
   // Dependent variable
-  vector[N] perc;
+  real<lower=0, upper=1> perc[N];
+  
   vector[N] tx;
   vector[N] sp;
   
 }
 
 parameters {
-  vector[N] b_tx;
-  vector[N] b_sp;
+  real<lower=0.001> b_tx;
+  real<lower=0.001> b_sp;
+  
+  real<lower=0.001> sigma_tx;
+  real<lower=0.001> sigma_sp;
   
   real mu_tx;
   real mu_sp;
-  
-  real sigma_b_tx;
-  real sigma_b_sp;
-  
-  real sigma_y;
-
+ 
 }
 
-transformed parameters {
-  vector[N] y_hat;
-  
-  for(i in 1:N){
-    y_hat[i] = b_tx[i] * tx[i] +
-    b_sp[i] * sp[i]
-    ;
-    
-  }
-}
 
 model {
-  mu_tx ~ normal(0, 1);
-  mu_sp ~ normal(0, 1);
+  b_tx ~ normal(0, 10);
+  b_sp ~ normal(0, 10);
   
-  sigma_b_tx ~ normal(0, 1);
-  sigma_b_sp ~ normal(0, 1);
+  sigma_tx ~ normal(0, 5);
+  sigma_sp ~ normal(0, 5);
   
-  b_tx ~ normal(mu_tx, sigma_b_tx);
-  b_sp ~ normal(mu_sp, sigma_b_sp);
+  mu_tx ~ normal(b_tx, sigma_tx);
+  mu_sp ~ normal(b_sp, sigma_tx);
   
-	perc ~ beta_binomial(b_sp, b_tx);
+  perc ~ beta(mu_tx, mu_sp);
 	  
 }
 

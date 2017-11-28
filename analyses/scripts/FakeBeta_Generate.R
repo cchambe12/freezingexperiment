@@ -34,7 +34,7 @@ sp = gl(nsp, rep*ntx, length = ntot)
 (d <- data.frame(tx, sp)) 
 
 ###### Set up differences for each level
-txdiff = .04
+txdiff = -.04
 spdiff = .01
 
 ######## SD for each treatment
