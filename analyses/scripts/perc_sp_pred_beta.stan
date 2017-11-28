@@ -5,8 +5,8 @@
 
 data {
   int<lower=0> N;
-  int<lower=0> n_sp;
-  int<lower=0.001, upper=1> sp[N];
+  
+  // Dependent variable
   vector[N] perc;
   vector[N] tx;
   vector[N] sp;
@@ -14,44 +14,43 @@ data {
 }
 
 parameters {
-  vector[n_sp] a_sp;
-  vector[n_sp] b_tx;
-
-  real mu_a; 
-  real mu_b_tx;
-
-  real<lower=0> sigma_b_tx;
-
-  real<lower=0> sigma_a;
-    
-  real<lower=0> sigma_y; 
+  vector[N] b_tx;
+  vector[N] b_sp;
   
+  real mu_tx;
+  real mu_sp;
+  
+  real sigma_b_tx;
+  real sigma_b_sp;
+  
+  real sigma_y;
+
 }
 
-
-transformed parameters { 
-		vector[N] y_hat;
-		
-	for(i in 1:N){
-		y_hat[i] = a_sp[sp[i]] + 
-		b_tx[sp[i]] * tx[i] 
-		;
-				
-		}
-	
+transformed parameters {
+  vector[N] y_hat;
+  
+  for(i in 1:N){
+    y_hat[i] = b_tx[i] * tx[i] +
+    b_sp[i] * sp[i]
+    ;
+    
+  }
 }
 
 model {
-	// Priors. Make them flat
-	mu_b_tx ~ beta_binomial(0, 1); 
-	
-	sigma_b_tx ~ beta_binomial(0, 1);
-
-	a_sp ~ beta_binomial(mu_a, sigma_a);  
-	
-	b_tx ~ beta_binomial(mu_b_tx, sigma_b_tx);
-	
-	perc ~ beta_binomial(y_hat, sigma_y);
-
+  mu_tx ~ normal(0, 1);
+  mu_sp ~ normal(0, 1);
+  
+  sigma_b_tx ~ normal(0, 1);
+  sigma_b_sp ~ normal(0, 1);
+  
+  b_tx ~ normal(mu_tx, sigma_b_tx);
+  b_sp ~ normal(mu_sp, sigma_b_sp);
+  
+	perc ~ beta_binomial(b_sp, b_tx);
+	  
 }
+
+
 

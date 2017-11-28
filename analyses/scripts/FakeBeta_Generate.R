@@ -76,8 +76,8 @@ summary(lm(perc ~ tx + sp, data = fake)) # double check
 #length(fake$sp[fake$sp==1])
 
 ### run rstanarm models to check the fake data - prepare for running stan code
-mod1<-stan_glmer(perc~tx+(1|sp), data=fake, family = binomial(link="logit"))
-plot(mod1, pars="beta")
+mod1<-stan_betareg(perc~tx+sp, data=fake, link="logit", link.phi = "log")
+plot(mod1)
 pp_check(mod1)
 
 ### Use this script to learn apply version to build fake data
