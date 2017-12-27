@@ -102,4 +102,5 @@ qplot(species, sla, data = bb,
       geom = "boxplot", color=tx) + 
   xlab("Species")+ylab("SLA")
 
+#write.csv(bb, file=("~/Documents/git/freezingexperiment/analyses/output/buds_traits.csv"), row.names=FALSE)
   
