@@ -17,6 +17,7 @@ library(ggplot2)
 library(shinystan)
 library(bayesplot)
 library(rstanarm)
+library(betareg)
 
 # Setting working directory. Add in your own path in an if statement for your file structure
 setwd("~/Documents/git/freezingexperiment/analyses/")
@@ -29,11 +30,15 @@ options(mc.cores = parallel::detectCores())
 ########################
 #### get the data
 bb<-read.csv("output/percentBB_betula.csv", header=TRUE)
+bb<-read.csv("output/perc_clean.csv", header=TRUE)
 bb<-read.csv("output/fakebeta.csv", header=TRUE)
 
 ## make a bunch of things numeric 
-bb$tx<-ifelse(bb$tx=="A", 0, 1)
+bb<-filter(bb, species!="SAMRAC")
+bb$tx<-ifelse(bb$TX=="A", 0, 1)
 bb$sp <- as.numeric(as.factor(bb$sp))
+bb$sp[bb$sp==1] <- 0
+bb$sp[bb$sp==2] <- 1
 bb$perc <- as.numeric(bb$perc)
 bb$perc <- bb$perc/100
 
@@ -57,9 +62,9 @@ datalist.td <- list(perc=perc,tx=tx,sp=sp,N=N) # removed sp=sp and n_sp=s_sp for
 ##############################
 ###### real data rstanarm first
 
-fit1<-stan_betareg(perc~tx+sp, data=pp.stan)
+fit1<-stan_betareg(perc~tx+sp+tx:sp, data=pp.stan, link="logit", link.phi="log")
 fit1
-plot(fit1, pars=c("tx","sp"))
+plot(fit1, pars=c("beta"))
 pp_check(fit1)
 prior_summary(fit1)
 

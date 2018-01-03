@@ -92,6 +92,19 @@ risk$species<-substr(risk$ID, 1,6)
 risk$individ<-substr(risk$ID, 1, 10)
 risk$bud<-substr(risk$ID, 12, 13)
 
+tx<-d%>%dplyr::select(NEW, TX)%>%filter(NEW%in%keep)%>%rename(individ=NEW)
+tx<-tx[!duplicated(tx),]
+
+risk<-inner_join(risk, tx)
+
+risk$burst<-ifelse(risk$bbch.last>=15, 1, 0)
+risk$total<-ave(risk$bud,risk$individ, FUN=length)
+risk$total<-as.numeric(risk$total)
+risk$burst.perc<-ave(risk$burst,risk$individ, FUN=sum)
+risk$burst.perc<-as.numeric(risk$burst.perc)
+risk$perc<-risk$burst.perc/risk$total
+#write.csv(risk, file="~/Documents/git/freezingexperiment/analyses/output/perc_clean.csv", row.names = FALSE)
+
 
 
 ###### Now integrate FS ###########

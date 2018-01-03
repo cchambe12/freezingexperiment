@@ -17,6 +17,7 @@ library(ggplot2)
 library(shinystan)
 library(bayesplot)
 library(rstanarm)
+library(dplyr)
 
 # Setting working directory. Add in your own path in an if statement for your file structure
 setwd("~/Documents/git/freezingexperiment/analyses/")
@@ -30,6 +31,7 @@ options(mc.cores = parallel::detectCores())
 #### get the data
 bb<-read.csv("output/birches_clean.csv", header=TRUE)
 bb<-read.csv("output/fakedata_exp.csv", header=TRUE)
+bb<-read.csv("output/buds_traits.csv", header=TRUE)
 
 ## make a bunch of things numeric 
 bb$tx<-ifelse(bb$tx=="A", 0, 1)
@@ -61,7 +63,21 @@ datalist.td <- list(dvr=dvr,tx=tx,sp=sp, ind=ind,N=N,n_ind=n_ind, n_sp=n_sp) # r
 ##############################
 ###### real data rstanarm first
 
-fit1<-stan_glmer(dvr~tx+sp+(1|ind), data=dvr.stan)
+cl<-bb%>%dplyr::select(ID, species, individ, tx, chlorophyll)
+cl<-cl[!is.na(cl$chlorophyll),]
+cl$chloro<-ave(cl$chlorophyll, cl$individ)
+cl$tx<-ifelse(cl$tx=="A", 0, 1)
+mod<-stan_glmer(chloro~tx+species+(1|individ), data=cl)
+mod1<-stan_glmer(chloro~tx+species+tx:species+(1|individ), data=cl)
+
+
+sla<-bb%>%dplyr::select(species, individ, tx, sla)
+sla<-sla[!duplicated(sla),]
+sla$tx<-ifelse(sla$tx=="A", 0, 1)
+mod2<-stan_glm(sla~tx+species+ tx:species, data=sla)
+mod3<-stan_glmer(sla~tx+species+tx:species+(1|individ), data=sla)
+
+fit1<-stan_glmer(dvr~tx+sp+tx:sp+(1|ind), data=dvr.stan)
 fit1
 plot(fit1, pars="beta")
 pp_check(fit1)
