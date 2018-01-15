@@ -29,3 +29,10 @@ TX C was put under drought conditions prior to freeze
 
 Planting Folder is for Common Garden planting plans
 
+
+><><>< 11 December 2017 ><><><
+Cold stratified: ACESAC and PRUVIR in forest mix put in fridge in West labs
+Warm stratified: ILEVER in forest mix in back room on shelf
+
+><><>< 15 January 2018 ><><><
+Cold Stratified: QUERUB and VACCOR in forest mix in fridge
