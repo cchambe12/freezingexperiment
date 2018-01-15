@@ -69,7 +69,7 @@ cl$chloro<-ave(cl$chlorophyll, cl$individ)
 cl$tx<-ifelse(cl$tx=="A", 0, 1)
 mod<-stan_glmer(chloro~tx+species+(1|individ), data=cl)
 mod1<-stan_glmer(chloro~tx+species+tx:species+(1|individ), data=cl)
-
+plot(mod1, pars="beta") + xlab(expression(Delta*" in Chlorophyll Content"~(nmol/cm^2))) + ylab("Parameter Effects")
 
 sla<-bb%>%dplyr::select(species, individ, tx, sla)
 sla<-sla[!duplicated(sla),]
@@ -79,7 +79,7 @@ mod3<-stan_glmer(sla~tx+species+tx:species+(1|individ), data=sla)
 
 fit1<-stan_glmer(dvr~tx+sp+tx:sp+(1|ind), data=dvr.stan)
 fit1
-plot(fit1, pars="beta")
+plot(fit1, pars="beta") + xlab(expression(Delta*" in Rate of Budburst (Days)")) + ylab("Parameter Effects")
 pp_check(fit1)
 
 ### Another posterior predictive check
