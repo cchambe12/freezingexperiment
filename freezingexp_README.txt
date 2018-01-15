@@ -34,5 +34,5 @@ Planting Folder is for Common Garden planting plans
 Cold stratified: ACESAC and PRUVIR in forest mix put in fridge in West labs
 Warm stratified: ILEVER in forest mix in back room on shelf
 
-><><>< 15 January 2018 ><><><
+><><>< 19 January 2018 ><><><
 Cold Stratified: QUERUB and VACCOR in forest mix in fridge
