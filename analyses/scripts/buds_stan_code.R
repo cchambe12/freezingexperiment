@@ -18,6 +18,8 @@ library(shinystan)
 library(bayesplot)
 library(rstanarm)
 library(dplyr)
+library(brms)
+library(ggstance)
 
 # Setting working directory. Add in your own path in an if statement for your file structure
 setwd("~/Documents/git/freezingexperiment/analyses/")
@@ -76,6 +78,58 @@ sla<-sla[!duplicated(sla),]
 sla$tx<-ifelse(sla$tx=="A", 0, 1)
 mod2<-stan_glm(sla~tx+species+ tx:species, data=sla)
 mod3<-stan_glmer(sla~tx+species+tx:species+(1|individ), data=sla)
+
+fit.brm<-brm(dvr~tx+(1|sp)+(tx-1|sp), data=dvr.stan)
+
+m<-fit.brm
+m.int<-posterior_interval(m)
+sum.m<-summary(m)
+cri.f<-as.data.frame(sum.m$fixed[,c("Estimate", "l-95% CI", "u-95% CI")])
+cri.f<-cri.f[-1,] #removing the intercept 
+fdf1<-as.data.frame(rbind(as.vector(cri.f[,1]), as.vector(cri.f[,2]), as.vector(cri.f[,3])))
+fdf2<-cbind(fdf1, c(0, 0, 0) , c("Estimate", "2.5%", "95%"))
+names(fdf2)<-c(rownames(cri.f), "sp", "perc")
+
+cri.r<-(ranef(m, summary = TRUE, robust = FALSE,
+              probs = c(0.025, 0.975)))$sp
+cri.r2<-cri.r[, ,-1]
+cri.r2<-cri.r2[,-2,]
+dims<-dim(cri.r2)
+twoDimMat <- matrix(cri.r2, prod(dims[1:2]), dims[3])
+mat2<-cbind(twoDimMat, c(rep(1:2, length.out=6)), rep(c("Estimate", "2.5%", "95%"), each=2))
+df<-as.data.frame(mat2)
+names(df)<-c(rownames(cri.f), "sp", "perc")
+dftot<-rbind(fdf2, df)
+dflong<- tidyr::gather(dftot, var, value, tx, factor_key=TRUE)
+
+#adding the coef estiamtes to the random effect values 
+for (i in seq(from=1,to=nrow(dflong), by=9)) {
+  for (j in seq(from=3, to=8, by=1)) {
+    dflong$value[i+j]<- as.numeric(dflong$value[i+j]) + as.numeric(dflong$value[i])
+  }
+}
+dflong$rndm<-ifelse(dftot$ind>0, 2, 1)
+dfwide<-tidyr::spread(dflong, perc, value)
+dfwide[,4:6] <- as.data.frame(lapply(c(dfwide[,4:6]), as.numeric ))
+dfwide$ind<-as.factor(dfwide$ind)
+## plotting
+
+pd <- position_dodgev(height = -0.5)
+
+
+fig1 <-ggplot(dfwide, aes(x=Estimate, y=var, color=factor(ind), size=factor(rndm), alpha=factor(rndm)))+
+  geom_point(position =pd, size=4)+
+  geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, height =0)+
+  geom_vline(xintercept=0)+
+  scale_colour_manual(labels = expression("Fixed effects",italic("B. papyrifera"), italic("B. populifolia")),
+                      values=c("blue", "red", "orangered1"))+
+  scale_shape_manual(labels="", values=c("1"=16,"2"=16))+
+  scale_alpha_manual(values=c(1, 0.5))+
+  guides(alpha=FALSE) + 
+  scale_y_discrete(limits = rev(unique(sort(dfwide$var)))) + ylab("") + 
+  labs(col="Effects") + theme(legend.text=element_text(size=10))
+fig1
+
 
 fit1<-stan_glmer(dvr~tx+sp+tx:sp+(1|ind), data=dvr.stan)
 fit1
