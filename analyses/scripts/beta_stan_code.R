@@ -29,7 +29,7 @@ options(mc.cores = parallel::detectCores())
 
 ########################
 #### get the data
-bb<-read.csv("output/percentBB_betula.csv", header=TRUE)
+bperc<-read.csv("output/percentBB_betula.csv", header=TRUE)
 bb<-read.csv("output/perc_clean.csv", header=TRUE)
 bb<-read.csv("output/fakebeta.csv", header=TRUE)
 
@@ -40,12 +40,14 @@ bb$sp <- as.numeric(as.factor(bb$sp))
 bb$sp[bb$sp==1] <- 0
 bb$sp[bb$sp==2] <- 1
 bb$perc <- as.numeric(bb$perc)
-bb$perc <- bb$perc/100
+bb$perc<-bb$perc*100
+bb$ind<-as.numeric(as.factor(substr(bb$individ, 9,10)))
 
 
 ## subsetting data, preparing genus variable, removing NAs
-pp.prepdata <- subset(bb, select=c("perc", "tx", "sp")) # removed "sp" when doing just one species
+pp.prepdata <- subset(bb, select=c("perc", "tx", "sp", "ind")) # removed "sp" when doing just one species
 pp.stan <- pp.prepdata[complete.cases(pp.prepdata),]
+pp.stan<-pp.stan[!duplicated(pp.stan),]
 
 
 perc = pp.stan$perc
@@ -62,11 +64,69 @@ datalist.td <- list(perc=perc,tx=tx,sp=sp,N=N) # removed sp=sp and n_sp=s_sp for
 ##############################
 ###### real data rstanarm first
 
-fit1<-stan_betareg(perc~tx+sp+tx:sp, data=pp.stan, link="logit", link.phi="log")
+perc.brm<-brm(perc~tx+sp+tx:sp+(1|ind)+(tx-1|ind)+(sp-1|ind)+(tx:sp-1|ind), data=pp.stan)
 fit1
 plot(fit1, pars=c("beta"))
 pp_check(fit1)
 prior_summary(fit1)
+
+m1<-perc.brm
+m.int1<-posterior_interval(m1)
+sum.m1<-summary(m1)
+cri.f1<-as.data.frame(sum.m1$fixed[,c("Estimate", "l-95% CI", "u-95% CI")])
+cri.f1<-cri.f1[-1,] #removing the intercept 
+fdf11<-as.data.frame(rbind(as.vector(cri.f1[,1]), as.vector(cri.f1[,2]), as.vector(cri.f1[,3])))
+fdf21<-cbind(fdf11, c(0, 0, 0) , c("Estimate", "2.5%", "95%"))
+names(fdf21)<-c(rownames(cri.f1), "ind", "perc")
+
+cri.r1<-(ranef(m, summary = TRUE, robust = FALSE,
+              probs = c(0.025, 0.975)))$ind
+cri.r21<-cri.r1[, ,-1]
+cri.r21<-cri.r21[,-2,]
+dims1<-dim(cri.r21)
+twoDimMat1 <- matrix(cri.r21, prod(dims1[1:2]), dims1[3])
+mat21<-cbind(twoDimMat1, c(rep(1:15, length.out=45)), rep(c("Estimate", "2.5%", "95%"), each=15))
+df1<-as.data.frame(mat21)
+names(df1)<-c(rownames(cri.f1), "ind", "perc")
+dftot1<-rbind(fdf21, df1)
+dflong1<- tidyr::gather(dftot1, var, value, tx:`tx:sp`, factor_key=TRUE)
+
+#adding the coef estiamtes to the random effect values 
+for (i in seq(from=1,to=nrow(dflong1), by=48)) {
+  for (j in seq(from=3, to=47, by=1)) {
+    dflong1$value[i+j]<- as.numeric(dflong1$value[i+j]) + as.numeric(dflong1$value[i])
+  }
+}
+dflong1$rndm<-ifelse(dftot1$ind>0, 2, 1)
+dfwide1<-tidyr::spread(dflong1, perc, value)
+dfwide1[,4:6] <- as.data.frame(lapply(c(dfwide1[,4:6]), as.numeric ))
+dfwide1$ind<-as.factor(dfwide1$ind)
+## plotting
+
+pd <- position_dodgev(height = -0.5)
+
+dfwide1$legend<-factor(dfwide1$ind,
+                      labels=c("Overall Effects","1","2","3","4","5","6","7","8","9", "10","11","12","13","14","15"))
+
+fig11 <-ggplot(dfwide1, aes(x=Estimate, y=var, color=legend, size=factor(rndm), alpha=factor(rndm)))+
+  geom_point(position =pd)+
+  geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, height =0, width=0)+
+  geom_vline(xintercept=0)+
+  scale_colour_manual(values=c("blue","darkred", "firebrick3","indianred","orangered3", "orangered1","orange3", 
+                               "sienna4","sienna2", "green4", "green3","lightseagreen", "purple2","lightslateblue",
+                               "mediumorchid2", "magenta3"),
+                      breaks=c("Overall Effects"))+
+  scale_size_manual(values=c(3, 2, 2, 2, 2, 2, 2, 2, 2, 2)) +
+  scale_shape_manual(labels="", values=c("1"=16,"2"=16))+
+  scale_alpha_manual(values=c(1, 0.3)) +
+  guides(size=FALSE, alpha=FALSE) + #removes the legend 
+  ggtitle(label = "B.")+ 
+  scale_y_discrete(limits = rev(unique(sort(dfwide$var))), labels=estimates) + ylab("") + 
+  labs(col="Effects") + theme(legend.position = "none", legend.box.background = element_rect(), 
+                              legend.title=element_blank(), legend.key.size = unit(0.05, "cm")) +
+  xlab("Estimate (percent)")
+fig11
+
 
 ### Another posterior predictive check
 yrep <- posterior_predict(fit1)
