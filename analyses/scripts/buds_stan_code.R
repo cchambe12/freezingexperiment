@@ -119,7 +119,7 @@ dfwidec$legend<-factor(dfwidec$ind,
 
 fig1c <-ggplot(dfwidec, aes(x=Estimate, y=var, color=legend, size=factor(rndm), alpha=factor(rndm)))+
   geom_point(position =pd)+
-  geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, height =0, width=0)+
+  geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, width=0)+
   geom_vline(xintercept=0)+
   scale_colour_manual(values=c("blue","darkred", "firebrick3","indianred","orangered3", "orangered1","orange3", 
                                "sienna4","sienna2", "green4", "green3","lightseagreen", "purple2","lightslateblue",
@@ -131,9 +131,8 @@ fig1c <-ggplot(dfwidec, aes(x=Estimate, y=var, color=legend, size=factor(rndm), 
   guides(size=FALSE, alpha=FALSE) + #removes the legend 
   ggtitle(label = "A.")+ 
   scale_y_discrete(limits = rev(unique(sort(dfwide$var))), labels=estimates) + ylab("") + 
-  labs(col="Effects") + theme(legend.position = "none", legend.box.background = element_rect(), 
-                              legend.title=element_blank(), legend.key.size = unit(0.05, "cm")) +
-  xlab(expression("Estimate"~(nmol/cm^2)))
+  labs(col="Effects") + theme(legend.position = "none", axis.title = element_text(size=11)) +
+  xlab(expression(atop("Model Estimate of Change ", paste("in Chlorophyll Content" ~(nmol/cm^2)))))
 fig1c
 
 
@@ -190,7 +189,7 @@ dfwides$legend<-factor(dfwides$ind,
 
 fig1s <-ggplot(dfwides, aes(x=Estimate, y=var, color=legend, size=factor(rndm), alpha=factor(rndm)))+
   geom_point(position =pd)+
-  geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, height =0, width=0)+
+  geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, width=0)+
   geom_vline(xintercept=0)+
   scale_colour_manual(values=c("blue","darkred", "firebrick3","indianred","orangered3", "orangered1","orange3", 
                                "sienna4","sienna2", "green4", "green3","lightseagreen", "purple2","lightslateblue",
@@ -202,9 +201,8 @@ fig1s <-ggplot(dfwides, aes(x=Estimate, y=var, color=legend, size=factor(rndm), 
   guides(size=FALSE, alpha=FALSE) + #removes the legend 
   ggtitle(label = "B.")+ 
   scale_y_discrete(limits = rev(unique(sort(dfwide$var))), labels=estimates) + ylab("") + 
-  labs(col="Effects") + theme(legend.position = "none", legend.box.background = element_rect(), 
-                              legend.title=element_blank(), legend.key.size = unit(0.05, "cm")) +
-  xlab("Estimate (leaf area/leaf mass)")
+  labs(col="Effects") + theme(legend.position = "none", axis.title = element_text(size=11)) +
+  xlab(expression(atop("Model Estimate of Change", paste("in SLA (leaf area/leaf mass)"))))
 fig1s
 
 ggarrange(fig1c, fig1s, ncol=2)
@@ -264,8 +262,8 @@ dfwide$legend<-factor(dfwide$ind,
                       labels=c("Overall Effects","1","2","3","4","5","6","7","8","9", "10","11","12","13","14","15"))
 
 fig1 <-ggplot(dfwide, aes(x=Estimate, y=var, color=legend, size=factor(rndm), alpha=factor(rndm)))+
-  geom_point(position =pd)+
-  geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, height =0, width=0)+
+  geom_point(position=pd)+
+  geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, width=0)+
   geom_vline(xintercept=0)+
   scale_colour_manual(values=c("blue","darkred", "firebrick3","indianred","orangered3", "orangered1","orange3", 
                                "sienna4","sienna2", "green4", "green3","lightseagreen", "purple2","lightslateblue",
@@ -279,10 +277,9 @@ fig1 <-ggplot(dfwide, aes(x=Estimate, y=var, color=legend, size=factor(rndm), al
   scale_y_discrete(limits = rev(unique(sort(dfwide$var))), labels=estimates) + ylab("") + 
   labs(col="Effects") + theme(legend.position = "none", legend.box.background = element_rect(), 
                               legend.title=element_blank(), legend.key.size = unit(0.05, "cm")) +
-  xlab("Estimate (days)")
+  xlab(expression(atop("Model Estimate of Change", paste("in Duration of Vegetative Risk (days)"))))
 fig1
-
-ggarrange(fig1, fig11, ncol=2)
+ggarrange(fig1, diff, ncol=2)
 
 
 fit1<-stan_glmer(dvr~tx+sp+tx:sp+(1|ind), data=dvr.stan)
