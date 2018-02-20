@@ -40,7 +40,7 @@ cc<-read.csv("output/buds_traits.csv", header=TRUE)
 bb$tx<-ifelse(bb$tx=="A", 0, 1)
 bb$sp <- as.numeric(as.factor(bb$sp))
 bb$dvr <- as.numeric(bb$dvr)
-bb$ind<-substr(bb$individ, 9,10)
+bb$ind<-as.numeric(as.factor(bb$individ))
 bb$frost<-as.numeric(bb$frost)
 
 
@@ -48,7 +48,7 @@ bb$frost<-as.numeric(bb$frost)
 dvr.prepdata <- subset(bb, select=c("dvr", "tx", "ind", "sp")) # removed "sp" when doing just one species
 dvr.stan <- dvr.prepdata[complete.cases(dvr.prepdata),]
 
-dvr.stan$ind <- as.numeric(as.factor(dvr.stan$ind))
+#dvr.stan$ind <- as.numeric(as.factor(dvr.stan$ind))
 
 dvr = dvr.stan$dvr
 tx = dvr.stan$tx
@@ -72,7 +72,7 @@ cl<-cl[!is.na(cl$chlorophyll),]
 cl$chloro<-ave(cl$chlorophyll, cl$individ)
 cl$tx<-as.numeric(ifelse(cl$tx=="A", 0, 1))
 cl$sp<-as.numeric(as.factor(cl$species))
-cl$ind<-as.numeric(as.factor(substr(cl$individ, 9,10)))
+cl$ind<-as.numeric(as.factor(cl$individ))
 cl.prepdata <- subset(cl, select=c("chloro", "tx", "ind", "sp")) # removed "sp" when doing just one species
 cl.stan <- cl.prepdata[complete.cases(cl.prepdata),]
 cl.stan<-cl.stan[!duplicated(cl.stan),]
@@ -93,15 +93,15 @@ cri.r2c<-cri.rc[, ,-1]
 cri.r2c<-cri.r2c[,-2,]
 dimsc<-dim(cri.r2c)
 twoDimMatc <- matrix(cri.r2c, prod(dimsc[1:2]), dimsc[3])
-mat2c<-cbind(twoDimMatc, c(rep(1:15, length.out=45)), rep(c("Estimate", "2.5%", "95%"), each=15))
+mat2c<-cbind(twoDimMatc, c(rep(1:29, length.out=87)), rep(c("Estimate", "2.5%", "95%"), each=29))
 dfc<-as.data.frame(mat2c)
 names(dfc)<-c(rownames(cri.fc), "ind", "perc")
 dftotc<-rbind(fdf2c, dfc)
 dflongc<- tidyr::gather(dftotc, var, value, tx:`tx:sp`, factor_key=TRUE)
 
 #adding the coef estiamtes to the random effect values 
-for (i in seq(from=1,to=nrow(dflongc), by=48)) {
-  for (j in seq(from=3, to=47, by=1)) {
+for (i in seq(from=1,to=nrow(dflongc), by=90)) {
+  for (j in seq(from=3, to=89, by=1)) {
     dflongc$value[i+j]<- as.numeric(dflongc$value[i+j]) + as.numeric(dflongc$value[i])
   }
 }
@@ -112,26 +112,33 @@ dfwidec$ind<-as.factor(dfwidec$ind)
 ## plotting
 
 pd <- position_dodgev(height = -0.5)
+bpap<-c(1:14)
+bpop<-c(15:29)
+dfwidec$col<-NA
+dfwidec$col<-ifelse(dfwidec$ind==0, "blue",dfwidec$col)
+dfwidec$col<-ifelse(dfwidec$ind%in%bpap, "firebrick4",dfwidec$col)
+dfwidec$col<-ifelse(dfwidec$ind%in%bpop, "lightseagreen",dfwidec$col)
+
 
 estimates<-c("Treatment x Species", "Species", "Treatment")
-dfwidec$legend<-factor(dfwidec$ind,
-                       labels=c("Overall Effects","1","2","3","4","5","6","7","8","9", "10","11","12","13","14","15"))
+dfwidec$legend<-factor(dfwidec$col,
+                      labels=c("Overall Effects","B. papyrifera", "B. populifolia"))
 
-fig1c <-ggplot(dfwidec, aes(x=Estimate, y=var, color=legend, size=factor(rndm), alpha=factor(rndm)))+
+fig1c <-ggplot(dfwidec, aes(x=Estimate, y=var, color=col, size=factor(rndm), alpha=factor(rndm)))+
   geom_point(position =pd)+
   geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, width=0)+
   geom_vline(xintercept=0)+
-  scale_colour_manual(values=c("blue","darkred", "firebrick3","indianred","orangered3", "orangered1","orange3", 
-                               "sienna4","sienna2", "green4", "green3","lightseagreen", "purple2","lightslateblue",
-                               "mediumorchid2", "magenta3"),
-                      breaks=c("Overall Effects"))+
+  scale_color_manual(values=c("blue","firebrick4","seagreen"),
+                     labels=c("Overall Effects","B. papyrifera", "B. populifolia"))+
   scale_size_manual(values=c(3, 2, 2, 2, 2, 2, 2, 2, 2, 2)) +
   scale_shape_manual(labels="", values=c("1"=16,"2"=16))+
   scale_alpha_manual(values=c(1, 0.3)) +
   guides(size=FALSE, alpha=FALSE) + #removes the legend 
   ggtitle(label = "A.")+ 
   scale_y_discrete(limits = rev(unique(sort(dfwide$var))), labels=estimates) + ylab("") + 
-  labs(col="Effects") + theme(legend.position = "none", axis.title = element_text(size=11)) +
+  labs(col="Effects") + theme(legend.title = element_blank(), legend.text = element_text(size=8),
+                              legend.key.size = unit(0.25,"cm"), legend.position = c(.85,.50),
+                              legend.background = element_rect()) +
   xlab(expression(atop("Model Estimate of Change ", paste("in Chlorophyll Content" ~(nmol/cm^2)))))
 fig1c
 
@@ -141,7 +148,7 @@ sla<-sla[!duplicated(sla),]
 sla$tx<-as.numeric(ifelse(sla$tx=="A", 0, 1))
 sla$sp<-as.numeric(as.factor(sla$species))
 sla$sla<-as.numeric(sla$sla)
-sla$ind<-as.numeric(as.factor(substr(sla$individ, 9,10)))
+sla$ind<-as.numeric(as.factor(sla$individ))
 
 sla.prepdata <- subset(sla, select=c("sla", "tx", "ind", "sp")) # removed "sp" when doing just one species
 sla.stan <- sla.prepdata[complete.cases(sla.prepdata),]
@@ -163,15 +170,15 @@ cri.r2s<-cri.rs[, ,-1]
 cri.r2s<-cri.r2s[,-2,]
 dimss<-dim(cri.r2s)
 twoDimMats <- matrix(cri.r2s, prod(dimss[1:2]), dimss[3])
-mat2s<-cbind(twoDimMats, c(rep(1:15, length.out=45)), rep(c("Estimate", "2.5%", "95%"), each=15))
+mat2s<-cbind(twoDimMats, c(rep(1:29, length.out=87)), rep(c("Estimate", "2.5%", "95%"), each=29))
 dfs<-as.data.frame(mat2s)
 names(dfs)<-c(rownames(cri.fs), "ind", "perc")
 dftots<-rbind(fdf2s, dfs)
 dflongs<- tidyr::gather(dftots, var, value, tx:`tx:sp`, factor_key=TRUE)
 
 #adding the coef estiamtes to the random effect values 
-for (i in seq(from=1,to=nrow(dflongs), by=48)) {
-  for (j in seq(from=3, to=47, by=1)) {
+for (i in seq(from=1,to=nrow(dflongs), by=90)) {
+  for (j in seq(from=3, to=89, by=1)) {
     dflongs$value[i+j]<- as.numeric(dflongs$value[i+j]) + as.numeric(dflongs$value[i])
   }
 }
@@ -182,29 +189,33 @@ dfwides$ind<-as.factor(dfwides$ind)
 ## plotting
 
 pd <- position_dodgev(height = -0.5)
+dfwides$col<-NA
+dfwides$col<-ifelse(dfwides$ind==0, "blue",dfwides$col)
+dfwides$col<-ifelse(dfwides$ind%in%bpap, "firebrick4",dfwides$col)
+dfwides$col<-ifelse(dfwides$ind%in%bpop, "lightseagreen",dfwides$col)
+
 
 estimates<-c("Treatment x Species", "Species", "Treatment")
-dfwides$legend<-factor(dfwides$ind,
-                       labels=c("Overall Effects","1","2","3","4","5","6","7","8","9", "10","11","12","13","14","15"))
-
-fig1s <-ggplot(dfwides, aes(x=Estimate, y=var, color=legend, size=factor(rndm), alpha=factor(rndm)))+
+dfwides$legend<-factor(dfwides$col,
+                       labels=c("Overall Effects","B. papyrifera", "B. populifolia"))
+fig1s <-ggplot(dfwides, aes(x=Estimate, y=var, color=col, size=factor(rndm), alpha=factor(rndm)))+
   geom_point(position =pd)+
   geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, width=0)+
   geom_vline(xintercept=0)+
-  scale_colour_manual(values=c("blue","darkred", "firebrick3","indianred","orangered3", "orangered1","orange3", 
-                               "sienna4","sienna2", "green4", "green3","lightseagreen", "purple2","lightslateblue",
-                               "mediumorchid2", "magenta3"),
-                      breaks=c("Overall Effects"))+
+  scale_color_manual(values=c("blue","firebrick4","seagreen"),
+                     labels=c("Overall Effects","B. papyrifera", "B. populifolia"))+
   scale_size_manual(values=c(3, 2, 2, 2, 2, 2, 2, 2, 2, 2)) +
   scale_shape_manual(labels="", values=c("1"=16,"2"=16))+
   scale_alpha_manual(values=c(1, 0.3)) +
   guides(size=FALSE, alpha=FALSE) + #removes the legend 
   ggtitle(label = "B.")+ 
   scale_y_discrete(limits = rev(unique(sort(dfwide$var))), labels=estimates) + ylab("") + 
-  labs(col="Effects") + theme(legend.position = "none", axis.title = element_text(size=11)) +
-  xlab(expression(atop("Model Estimate of Change", paste("in SLA (leaf area/leaf mass)"))))
+  labs(col="Effects") + theme(legend.title = element_blank(), legend.text = element_text(size=8),
+                              legend.key.size = unit(0.25,"cm"), legend.position = "none",
+                              legend.background = element_rect()) +
+  xlab(expression(atop("Model Estimate of Change in SLA", paste("(leaf area (cm^2)/leaf mass (g))"))))
 fig1s
-
+quartz()
 ggarrange(fig1c, fig1s, ncol=2)
 
 fit.brm<-brm(dvr~tx+sp+tx:sp+(1|ind)+(tx-1|ind)+(sp-1|ind)+(tx:sp-1|ind), data=dvr.stan)
@@ -224,15 +235,15 @@ cri.r2<-cri.r[, ,-1]
 cri.r2<-cri.r2[,-2,]
 dims<-dim(cri.r2)
 twoDimMat <- matrix(cri.r2, prod(dims[1:2]), dims[3])
-mat2<-cbind(twoDimMat, c(rep(1:15, length.out=45)), rep(c("Estimate", "2.5%", "95%"), each=15))
+mat2<-cbind(twoDimMat, c(rep(1:29, length.out=87)), rep(c("Estimate", "2.5%", "95%"), each=29))
 df<-as.data.frame(mat2)
 names(df)<-c(rownames(cri.f), "ind", "perc")
 dftot<-rbind(fdf2, df)
 dflong<- tidyr::gather(dftot, var, value, tx:`tx:sp`, factor_key=TRUE)
 
 #adding the coef estiamtes to the random effect values 
-for (i in seq(from=1,to=nrow(dflong), by=48)) {
-  for (j in seq(from=3, to=47, by=1)) {
+for (i in seq(from=1,to=nrow(dflong), by=90)) {
+  for (j in seq(from=3, to=89, by=1)) {
     dflong$value[i+j]<- as.numeric(dflong$value[i+j]) + as.numeric(dflong$value[i])
   }
 }
@@ -243,10 +254,16 @@ dfwide$ind<-as.factor(dfwide$ind)
 ## plotting
 
 pd <- position_dodgev(height = -0.5)
+#dfwide$ind<-as.numeric(as.factor(dfwide$ind))
+bpap<-c(1:14)
+bpop<-c(15:29)
+dfwide$col<-NA
+dfwide$col<-ifelse(dfwide$ind==0, "blue",dfwide$col)
+dfwide$col<-ifelse(dfwide$ind%in%bpap, "firebrick4",dfwide$col)
+dfwide$col<-ifelse(dfwide$ind%in%bpop, "lightseagreen",dfwide$col)
 
 
-
-fig1 <-ggplot(dfwide, aes(x=Estimate, y=var, color=factor(ind), size=factor(rndm), alpha=factor(rndm)))+
+fig1 <-ggplot(dfwide, aes(x=Estimate, y=var, color=col, size=factor(rndm), alpha=factor(rndm)))+
   geom_point(position =pd, size=4)+
   geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, height =0)+
   geom_vline(xintercept=0)+
@@ -258,27 +275,27 @@ fig1 <-ggplot(dfwide, aes(x=Estimate, y=var, color=factor(ind), size=factor(rndm
 fig1
 
 estimates<-c("Treatment x Species", "Species", "Treatment")
-dfwide$legend<-factor(dfwide$ind,
-                      labels=c("Overall Effects","1","2","3","4","5","6","7","8","9", "10","11","12","13","14","15"))
+dfwide$legend<-factor(dfwide$col,
+                      labels=c("Overall Effects","B. papyrifera", "B. populifolia"))
 
-fig1 <-ggplot(dfwide, aes(x=Estimate, y=var, color=legend, size=factor(rndm), alpha=factor(rndm)))+
+fig1 <-ggplot(dfwide, aes(x=Estimate, y=var, color=col, size=factor(rndm), alpha=factor(rndm)))+
   geom_point(position=pd)+
   geom_errorbarh(aes(xmin=(`2.5%`), xmax=(`95%`)), position=pd, size=.5, width=0)+
   geom_vline(xintercept=0)+
-  scale_colour_manual(values=c("blue","darkred", "firebrick3","indianred","orangered3", "orangered1","orange3", 
-                               "sienna4","sienna2", "green4", "green3","lightseagreen", "purple2","lightslateblue",
-                              "mediumorchid2", "magenta3"),
-                      breaks=c("Overall Effects"))+
+  scale_color_manual(values=c("blue","firebrick4","seagreen"),
+                      labels=c("Overall Effects","B. papyrifera", "B. populifolia"))+
   scale_size_manual(values=c(3, 2, 2, 2, 2, 2, 2, 2, 2, 2)) +
   scale_shape_manual(labels="", values=c("1"=16,"2"=16))+
   scale_alpha_manual(values=c(1, 0.3)) +
   guides(size=FALSE, alpha=FALSE) + #removes the legend 
   ggtitle(label = "A.")+ 
   scale_y_discrete(limits = rev(unique(sort(dfwide$var))), labels=estimates) + ylab("") + 
-  labs(col="Effects") + theme(legend.position = "none", legend.box.background = element_rect(), 
-                              legend.title=element_blank(), legend.key.size = unit(0.05, "cm")) +
+  labs(col="Effects") + theme(legend.title = element_blank(), legend.text = element_text(size=8),
+                              legend.key.size = unit(0.25,"cm"), legend.position = c(.85,.20),
+                              legend.background = element_rect()) +
   xlab(expression(atop("Model Estimate of Change", paste("in Duration of Vegetative Risk (days)"))))
 fig1
+
 ggarrange(fig1, diff, ncol=2)
 
 
