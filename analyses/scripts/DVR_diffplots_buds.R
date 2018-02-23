@@ -45,7 +45,8 @@ diff<-ggplot(dxx, aes(x=factor(species), y=diff)) + geom_point() +
   geom_linerange(aes(ymin=diff-diff.sd, ymax=diff+diff.sd), alpha=0.3) + 
   ylab(expression(atop(Delta*" in Duration of Vegetative Risk (days)"))) +
   theme(panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.title.x=element_blank(),
-        axis.text.x = element_text(face = "italic", angle=45, hjust=1), axis.text=element_text(size=10)) +
+        axis.text.x = element_text(face = "italic", angle=45, hjust=1), axis.text=element_text(size=10),
+        axis.title.y = element_text(vjust=0)) +
   geom_hline(yintercept=0, alpha=0.3, linetype=2) + ggtitle(label="B.")
 plot(diff)
 

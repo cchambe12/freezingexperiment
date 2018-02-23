@@ -296,6 +296,7 @@ fig1 <-ggplot(dfwide, aes(x=Estimate, y=var, color=col, size=factor(rndm), alpha
   xlab(expression(atop("Model Estimate of Change", paste("in Duration of Vegetative Risk (days)"))))
 fig1
 
+
 ggarrange(fig1, diff, ncol=2)
 
 
